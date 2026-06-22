@@ -1,9 +1,20 @@
+# 所有头文件一并列入源列表，使其在 VS 工程中可见（头文件不被直接编译，仅用于工程组织）
 add_library(qharness_core STATIC
-    schema/Role.cpp
-    schema/ToolCall.cpp
-    schema/ToolResult.cpp
-    schema/ToolDefinition.cpp
-    schema/Message.cpp
+    schema/Role.h           schema/Role.cpp
+    schema/ToolCall.h       schema/ToolCall.cpp
+    schema/ToolResult.h     schema/ToolResult.cpp
+    schema/ToolDefinition.h schema/ToolDefinition.cpp
+    schema/Message.h        schema/Message.cpp
+    engine/Engine.h
+    engine/EngineReActLoop.h
+    provider/Provider.h
+    provider/ProviderOpenAI.h
+    provider/ProviderClaude.h
+    tool/Tool.h
+    robot/Robot.h
+    robot/RobotFeishu.h
+    memory/Memory.h
+    memory/MemoryFile.h
 )
 target_include_directories(qharness_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 if(MSVC)
@@ -12,6 +23,7 @@ endif()
 
 # 测试可执行
 add_executable(qharness_core_tests
+    tests/TestHarness.h
     tests/TestMain.cpp
     tests/test_Role.cpp
     tests/test_ToolCall.cpp
