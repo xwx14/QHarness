@@ -18,6 +18,7 @@ add_executable(qharness_core_tests
     tests/test_ToolResult.cpp
     tests/test_ToolDefinition.cpp
     tests/test_Message.cpp
+    tests/skeleton_compile_check.cpp
 )
 target_link_libraries(qharness_core_tests PRIVATE qharness_core)
 if(MSVC)
