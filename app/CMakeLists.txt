@@ -4,6 +4,15 @@ add_executable(qharness_app WIN32
     MainWindow.h
     MainWindow.cpp
 )
+# 统一输出到 build/out：可执行程序与所有 DLL（含 windeployqt 部署的 Qt 运行时）集中于此
+# 多配置生成器（VS）会追加 Release/ 子目录，故用每配置属性覆盖，强制直接落入 out/
+foreach(CFG ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${CFG} CFG_UPPER)
+    set_target_properties(qharness_app PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_${CFG_UPPER} "${CMAKE_BINARY_DIR}/out")
+endforeach()
+set_target_properties(qharness_app PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/out")
 target_link_libraries(qharness_app PRIVATE qharness_core Qt5::Core Qt5::Widgets)
 if(MSVC)
     target_compile_options(qharness_app PRIVATE /utf-8)
