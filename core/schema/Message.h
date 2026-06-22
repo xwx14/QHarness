@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_SCHEMA_MESSAGE_H
+#define QH_SCHEMA_MESSAGE_H
 #include <string>
 #include <vector>
 #include "Role.h"
@@ -22,3 +23,4 @@ void from_json(const nlohmann::json& j, Message& m);
 
 } // namespace schema
 } // namespace qh
+#endif // QH_SCHEMA_MESSAGE_H

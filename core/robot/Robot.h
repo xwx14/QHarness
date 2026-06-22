@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_ROBOT_H
+#define QH_ROBOT_H
 #include <string>
 
 namespace qh {
@@ -13,3 +14,4 @@ public:
 
 } // namespace robot
 } // namespace qh
+#endif // QH_ROBOT_H

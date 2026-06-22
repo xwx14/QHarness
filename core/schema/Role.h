@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_SCHEMA_ROLE_H
+#define QH_SCHEMA_ROLE_H
 #include <string>
 #include <nlohmann/json.hpp>
 
@@ -25,3 +26,4 @@ NLOHMANN_JSON_SERIALIZE_ENUM(Role, {
 
 } // namespace schema
 } // namespace qh
+#endif // QH_SCHEMA_ROLE_H

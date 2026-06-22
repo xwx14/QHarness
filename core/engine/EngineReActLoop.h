@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_ENGINE_REACT_LOOP_H
+#define QH_ENGINE_REACT_LOOP_H
 #include "engine/Engine.h"
 #include <string>
 
@@ -16,3 +17,4 @@ public:
 
 } // namespace engine
 } // namespace qh
+#endif // QH_ENGINE_REACT_LOOP_H

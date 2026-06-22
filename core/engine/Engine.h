@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_ENGINE_H
+#define QH_ENGINE_H
 #include <string>
 
 namespace qh {
@@ -13,3 +14,4 @@ public:
 
 } // namespace engine
 } // namespace qh
+#endif // QH_ENGINE_H

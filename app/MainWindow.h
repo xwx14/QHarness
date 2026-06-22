@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_APP_MAINWINDOW_H
+#define QH_APP_MAINWINDOW_H
 #include <QMainWindow>
 
 class QDockWidget;
@@ -29,3 +30,4 @@ private:
 
 } // namespace app
 } // namespace qh
+#endif // QH_APP_MAINWINDOW_H

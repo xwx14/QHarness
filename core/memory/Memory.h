@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_MEMORY_H
+#define QH_MEMORY_H
 
 namespace qh {
 namespace memory {
@@ -13,3 +14,4 @@ public:
 
 } // namespace memory
 } // namespace qh
+#endif // QH_MEMORY_H

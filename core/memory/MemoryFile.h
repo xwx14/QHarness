@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_MEMORY_FILE_H
+#define QH_MEMORY_FILE_H
 #include "memory/Memory.h"
 #include <string>
 
@@ -23,3 +24,4 @@ private:
 
 } // namespace memory
 } // namespace qh
+#endif // QH_MEMORY_FILE_H

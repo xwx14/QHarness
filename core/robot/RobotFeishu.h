@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_ROBOT_FEISHU_H
+#define QH_ROBOT_FEISHU_H
 #include "robot/Robot.h"
 #include <string>
 
@@ -21,3 +22,4 @@ private:
 
 } // namespace robot
 } // namespace qh
+#endif // QH_ROBOT_FEISHU_H

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_SCHEMA_TOOLRESULT_H
+#define QH_SCHEMA_TOOLRESULT_H
 #include <string>
 #include <nlohmann/json.hpp>
 
@@ -17,3 +18,4 @@ void from_json(const nlohmann::json& j, ToolResult& tr);
 
 } // namespace schema
 } // namespace qh
+#endif // QH_SCHEMA_TOOLRESULT_H

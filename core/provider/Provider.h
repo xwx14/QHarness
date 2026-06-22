@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_PROVIDER_H
+#define QH_PROVIDER_H
 #include <vector>
 #include "schema/Message.h"
 #include "schema/ToolDefinition.h"
@@ -18,3 +19,4 @@ public:
 
 } // namespace provider
 } // namespace qh
+#endif // QH_PROVIDER_H

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_PROVIDER_CLAUDE_H
+#define QH_PROVIDER_CLAUDE_H
 #include "provider/Provider.h"
 #include <string>
 
@@ -30,3 +31,4 @@ private:
 
 } // namespace provider
 } // namespace qh
+#endif // QH_PROVIDER_CLAUDE_H

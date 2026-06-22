@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_TEST_HARNESS_H
+#define QH_TEST_HARNESS_H
 #include <iostream>
 #include <string>
 #include <vector>
@@ -56,3 +57,4 @@ struct Registrar {
                       << "    rhs=[" << _qhB << "]\n";                      \
         }                                                                   \
     } while (0)
+#endif // QH_TEST_HARNESS_H

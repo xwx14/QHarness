@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QH_TOOL_H
+#define QH_TOOL_H
 #include "schema/ToolDefinition.h"
 #include "schema/ToolCall.h"
 #include "schema/ToolResult.h"
@@ -16,3 +17,4 @@ public:
 
 } // namespace tool
 } // namespace qh
+#endif // QH_TOOL_H
