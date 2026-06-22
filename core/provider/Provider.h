@@ -10,6 +10,7 @@ namespace provider {
 class Provider {
 public:
     virtual ~Provider() = default;
+    // 失败时抛 std::runtime_error（HTTP/解析错误）
     virtual schema::Message generate(
         const std::vector<schema::Message>& messages,
         const std::vector<schema::ToolDefinition>& tools) = 0;

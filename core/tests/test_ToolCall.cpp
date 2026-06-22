@@ -28,3 +28,22 @@ QH_TEST(toolcall_parse_arguments) {
     QH_CHECK_EQ(parsed["x"].get<int>(), 1);
     QH_CHECK_EQ(parsed["y"][0].get<int>(), 2);
 }
+
+QH_TEST(toolcall_invalid_arguments_nothrow) {
+    qh::schema::ToolCall tc;
+    tc.id = "call_err";
+    tc.name = "bad_tool";
+    tc.arguments = "not a json"; // 非法 JSON
+
+    // 容错：to_json 对非法 arguments 不抛异常
+    bool threw = false;
+    json j;
+    try {
+        j = tc; // 隐式调用 to_json
+    } catch (...) {
+        threw = true;
+    }
+    QH_CHECK(!threw);
+    QH_CHECK(j["arguments"].is_object()); // 退化为空对象
+    QH_CHECK(j["arguments"].empty());
+}

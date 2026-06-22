@@ -16,9 +16,10 @@ nlohmann::json ToolCall::parseArguments() const {
 
 void to_json(nlohmann::json& j, const ToolCall& tc) {
     j = nlohmann::json{{"id", tc.id}, {"name", tc.name}};
-    // arguments 作为原始 JSON 值（对象/数组），而非被二次转义的字符串
+    // arguments 作为原始 JSON 值（对象/数组）；容错：非法 JSON 退化为空对象，不抛异常
     const std::string raw = tc.arguments.empty() ? std::string("{}") : tc.arguments;
-    j["arguments"] = nlohmann::json::parse(raw); // 解析失败会抛异常——由调用方保证参数合法
+    auto parsed = nlohmann::json::parse(raw, nullptr, false);
+    j["arguments"] = parsed.is_discarded() ? nlohmann::json::object() : parsed;
 }
 
 void from_json(const nlohmann::json& j, ToolCall& tc) {

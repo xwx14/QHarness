@@ -17,7 +17,7 @@ if not exist "%VSWHERE%" (
 )
 
 set "VS_MAJOR="
-for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -all -property installationVersion`) do (
+for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationVersion`) do (
     set "VS_VERSION=%%i"
     set "VS_MAJOR=!VS_VERSION:~0,2!"
 )
@@ -39,11 +39,15 @@ if "!USE_AUTO_GEN!"=="0" (
     echo [INFO] Generator : auto (detected VS !VS_MAJOR!, letting cmake choose default)
 )
 
-rem --- Configure ---
-set "CMAKE_ARGS=-S %SOURCE_DIR% -B %BUILD_DIR% -A x64 -DCMAKE_PREFIX_PATH=%QT_PREFIX%"
-if "!USE_AUTO_GEN!"=="0" set "CMAKE_ARGS=-G "!CMAKE_GEN!" %CMAKE_ARGS%"
+rem --- Remove trailing backslash from SOURCE_DIR to avoid quote-gluing ---
+if "%SOURCE_DIR:~-1%"=="\" set "SOURCE_DIR=%SOURCE_DIR:~0,-1%"
 
-cmake %CMAKE_ARGS%
+rem --- Configure ---
+if "!USE_AUTO_GEN!"=="0" (
+    cmake -G "!CMAKE_GEN!" -S "%SOURCE_DIR%" -B "%BUILD_DIR%" -A x64 -DCMAKE_PREFIX_PATH="%QT_PREFIX%"
+) else (
+    cmake -S "%SOURCE_DIR%" -B "%BUILD_DIR%" -A x64 -DCMAKE_PREFIX_PATH="%QT_PREFIX%"
+)
 if errorlevel 1 (
     echo [ERROR] CMake configuration failed.
     exit /b 1

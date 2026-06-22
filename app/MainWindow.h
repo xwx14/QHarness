@@ -20,11 +20,11 @@ private slots:
 private:
     void appendLog(const QString& text);
 
-    QDockWidget* logDock_;
-    QDockWidget* chatDock_;
-    QPlainTextEdit* logView_;
-    QTextBrowser* chatView_;
-    QLineEdit* chatInput_;
+    QDockWidget* logDock_ = nullptr;
+    QDockWidget* chatDock_ = nullptr;
+    QPlainTextEdit* logView_ = nullptr;
+    QTextBrowser* chatView_ = nullptr;
+    QLineEdit* chatInput_ = nullptr;
 };
 
 } // namespace app

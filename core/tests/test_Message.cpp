@@ -38,6 +38,7 @@ QH_TEST(message_with_toolcalls) {
     auto back = j.get<qh::schema::Message>();
     QH_CHECK_EQ(back.toolCalls.size(), (size_t)1);
     QH_CHECK_EQ(back.toolCalls[0].name, std::string("bash"));
+    QH_CHECK_EQ(back.toolCalls[0].arguments, std::string(R"({"command":"pwd"})"));
 }
 
 QH_TEST(message_tool_response) {
