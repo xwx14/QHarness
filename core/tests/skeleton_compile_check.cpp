@@ -9,7 +9,6 @@
 #include "memory/Memory.h"
 #include "memory/MemoryFile.h"
 #include "schema/Message.h"
-#include "schema/ToolDefinition.h"
 
 namespace qh {
 namespace checks {

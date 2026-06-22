@@ -2,7 +2,6 @@
 #define QH_PROVIDER_H
 #include <vector>
 #include "schema/Message.h"
-#include "schema/ToolDefinition.h"
 
 namespace qh {
 namespace provider {

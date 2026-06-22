@@ -1,9 +1,5 @@
 # 所有头文件一并列入源列表，使其在 VS 工程中可见（头文件不被直接编译，仅用于工程组织）
 add_library(qharness_core STATIC
-    schema/Role.h           schema/Role.cpp
-    schema/ToolCall.h       schema/ToolCall.cpp
-    schema/ToolResult.h     schema/ToolResult.cpp
-    schema/ToolDefinition.h schema/ToolDefinition.cpp
     schema/Message.h        schema/Message.cpp
     engine/Engine.h
     engine/EngineReActLoop.h

@@ -1,8 +1,6 @@
 #ifndef QH_TOOL_H
 #define QH_TOOL_H
-#include "schema/ToolDefinition.h"
-#include "schema/ToolCall.h"
-#include "schema/ToolResult.h"
+#include "schema/Message.h"
 
 namespace qh {
 namespace tool {

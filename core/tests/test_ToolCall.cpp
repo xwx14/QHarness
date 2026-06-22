@@ -1,5 +1,5 @@
 #include "TestHarness.h"
-#include "schema/ToolCall.h"
+#include "schema/Message.h"
 #include <nlohmann/json.hpp>
 
 using nlohmann::json;
