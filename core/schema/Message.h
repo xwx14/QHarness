@@ -26,7 +26,8 @@ NLOHMANN_JSON_SERIALIZE_ENUM(Role, {
 })
 
 // 模型请求调用的具体工具
-struct ToolCall {
+class ToolCall {
+public:
     std::string id;          // 工具调用唯一 ID
     std::string name;        // 工具名（如 "bash"）
     std::string arguments;   // 原始 JSON 文本（延迟解析，解析责任交给具体工具）
@@ -39,7 +40,8 @@ void to_json(nlohmann::json& j, const ToolCall& tc);
 void from_json(const nlohmann::json& j, ToolCall& tc);
 
 // 工具本地执行完毕返回的物理结果
-struct ToolResult {
+class ToolResult {
+public:
     std::string toolCallId;
     std::string output;   // 控制台输出或报错堆栈
     bool isError = false; // 是否失败，供错误自愈使用
@@ -49,7 +51,8 @@ void to_json(nlohmann::json& j, const ToolResult& tr);
 void from_json(const nlohmann::json& j, ToolResult& tr);
 
 // 大模型可调用工具的元信息（供模型理解工具有何用途）
-struct ToolDefinition {
+class ToolDefinition {
+public:
     std::string name;
     std::string description;
     nlohmann::json inputSchema; // 对应 JSON Schema
@@ -59,7 +62,8 @@ void to_json(nlohmann::json& j, const ToolDefinition& td);
 void from_json(const nlohmann::json& j, ToolDefinition& td);
 
 // 上下文中传递的单条消息
-struct Message {
+class Message {
+public:
     Role role = Role::User;
     std::string content;                  // 纯文本内容
 
