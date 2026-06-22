@@ -1,0 +1,26 @@
+在此文件夹下创建依赖Qt的可扩展大模型Harness，语言为C++，使用cmake进行组织，并创建一个用msvc编译的bat脚本。先分为2个模块，分别为：
+## 基础库模块
+实现各抽象基类及基础实现。
+包含以下抽象类及基础实现
+Engine抽象类：运行过程类。
+EngineReActLoop类：继承自engine，实现典型的ReAct循环推理行动过程
+provider抽象类：大模型连接抽象类
+ProviderOpenAI:OpenAI格式的大模型连接类
+ProviderClaude:Claude格式的大模型连接类
+tool抽象类：工具抽象类，edit/read/bash等工具的基类。
+robot抽象类：用于连接外部机器人（如飞书机器人）的抽象类
+Robotfeishu类：用于连接飞书机器人
+memory抽象类：记忆系统的抽象类
+MemoryFile类：基于文件的记忆系统
+
+## 界面模块（exe）
+主窗口及界面控件
+主窗口的各个子窗口为QDockWidget
+先实现一个日志子窗口，和对话窗口。
+
+Qt库使用E:\programProject\Qt\5.14.2\msvc2017_64
+json读写使用third\nlohmann
+使用httplib.h进行http的连接
+
+建立框架后，先进行第一步，将message.go中的数据结构以类的形式实现，并实现json序列化/反序列化
+

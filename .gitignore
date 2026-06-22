@@ -1,0 +1,34 @@
+# 构建输出
+build/
+out/
+debug/
+release/
+
+# CMake 生成物
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.cmake
+!CMakeLists.txt
+
+# 编译产物
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.obj
+*.o
+
+# Qt
+*.user
+*.user.*
+moc_*
+ui_*
+qrc_*
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*~
