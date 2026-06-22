@@ -3,6 +3,7 @@ add_library(qharness_core STATIC
     schema/ToolCall.cpp
     schema/ToolResult.cpp
     schema/ToolDefinition.cpp
+    schema/Message.cpp
 )
 target_include_directories(qharness_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 if(MSVC)
@@ -16,6 +17,7 @@ add_executable(qharness_core_tests
     tests/test_ToolCall.cpp
     tests/test_ToolResult.cpp
     tests/test_ToolDefinition.cpp
+    tests/test_Message.cpp
 )
 target_link_libraries(qharness_core_tests PRIVATE qharness_core)
 if(MSVC)
