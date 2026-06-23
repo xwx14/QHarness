@@ -5,14 +5,13 @@
 #include <vector>
 #include "schema/Message.h"
 #include "tool/Tool.h"
-#include "tool/ToolRegistry.h"
 #include "qh_export.h"
 
 namespace qh {
 namespace tool {
 
-// 工具管理器：持有多个工具的非拥有引用，负责注册/查找/分发执行
-class QH_API ToolManager : public ToolRegistry {
+// 工具管理器：持有多个工具的非拥有引用，负责注册/查找/注销/列举/分发执行
+class QH_API ToolManager {
 public:
     // 注册工具：以 tool.definition()._name 为键；重名返回 false（不覆盖、不抛错）
     bool registerTool(Tool& tool);
@@ -26,9 +25,11 @@ public:
     // 注销工具：按名移除；不存在返回 false
     bool unregisterTool(const std::string& name);
 
-    // 实现 ToolRegistry 契约
-    std::vector<schema::ToolDefinition> getAvailableTools() const override;
-    schema::ToolResult execute(const schema::ToolCall& call) override;
+    // 列出全部已注册工具定义
+    std::vector<schema::ToolDefinition> getAvailableTools() const;
+
+    // 按 call._name 路由执行工具；未命中返回 isError=true 的结果（不抛异常）
+    schema::ToolResult execute(const schema::ToolCall& call);
 
 private:
     std::unordered_map<std::string, Tool*> _tools;  // 非拥有：调用方保证工具生命周期

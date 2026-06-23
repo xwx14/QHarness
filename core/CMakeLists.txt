@@ -8,12 +8,12 @@ add_library(qharness_core SHARED
     provider/ProviderOpenAI.h   provider/ProviderOpenAI.cpp
     provider/ProviderClaude.h   provider/ProviderClaude.cpp
     tool/Tool.h
-    tool/ToolRegistry.h
     tool/ToolManager.h          tool/ToolManager.cpp
     interaction/Interaction.h
     interaction/InteractionFeishu.h    interaction/InteractionFeishu.cpp
     memory/Memory.h
     memory/MemoryFile.h         memory/MemoryFile.cpp
+    context/Composer.h          context/Composer.cpp
 )
 target_include_directories(qharness_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(qharness_core PRIVATE QH_BUILDING_DLL)

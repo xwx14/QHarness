@@ -8,6 +8,7 @@
 #include "interaction/InteractionFeishu.h"
 #include "memory/Memory.h"
 #include "memory/MemoryFile.h"
+#include "context/Composer.h"
 #include "schema/Message.h"
 
 namespace qh {
@@ -29,6 +30,9 @@ void touchSkeletons() {
 
     interaction::InteractionFeishu rf("https://open.feishu.cn/hook/x");
     rf.send("hi");
+
+    context::Composer cc("./", false);
+    (void)cc.build();
 }
 
 } // namespace checks

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-QHarnesscc 是依赖 Qt 的可扩展大模型（LLM）Harness，C++17 + CMake + MSVC。它是 Go 项目 `E:\MyHarness\go-tiny-claw` 的 C++ 演进版，目标是把 Go 版的 schema/Engine/Provider/Tool/Memory/Interaction 架构移植到 C++ 并加上 Qt 界面。
+QHarnesscc 是依赖 Qt 的可扩展大模型（LLM）Harness，C++17 + CMake + MSVC。它是 Go 项目 E:\MyHarness\go-tiny-clawBai\go-tiny-claw的 C++ 演进版，目标是把 Go 版的 schema/Engine/Provider/Tool/Memory/Interaction 架构移植到 C++ 并加上 Qt 界面。
 
 **当前完成度**：schema 数据结构与序列化（完整）、抽象类骨架（仅声明）、Qt 主窗口（最小可运行）。Engine/Provider/Tool/Memory/Interaction 的派生类方法体仍是 `/* TODO */` 占位，待后续步骤实现。
 
@@ -57,11 +57,11 @@ build/out/Release/qharness_app.exe
 
 ### 抽象类骨架（声明/实现分离）
 
-`engine/{Engine,EngineReActLoop}`、`provider/{Provider,ProviderOpenAI,ProviderClaude}`、`tool/{Tool,ToolRegistry,ToolManager}`、`interaction/{Interaction,InteractionFeishu}`、`memory/{Memory,MemoryFile}`。基类纯虚（`virtual ... = 0`）；派生类的构造函数与方法体在对应 `.cpp`（骨架阶段为 `/* TODO */` 占位），头文件仅声明。`Provider::generate` 失败约定抛 `std::runtime_error`。`core/tests/skeleton_compile_check.cpp` 强制实例化各派生类做链接期检查。
+`engine/{Engine,EngineReActLoop}`、`provider/{Provider,ProviderOpenAI,ProviderClaude}`、`tool/{Tool,ToolManager}`、`interaction/{Interaction,InteractionFeishu}`、`memory/{Memory,MemoryFile}`、`context/{Composer}`。基类纯虚（`virtual ... = 0`）；派生类的构造函数与方法体在对应 `.cpp`（骨架阶段为 `/* TODO */` 占位），头文件仅声明。`Provider::generate` 失败约定抛 `std::runtime_error`。`core/tests/skeleton_compile_check.cpp` 强制实例化各派生类做链接期检查。
 
 ### 命名空间
 
-`qh::schema`、`qh::engine`、`qh::provider`、`qh::tool`、`qh::interaction`、`qh::memory`、`qh::app`、`qh::test`。`core/` 目录是 `qharness_core` 的公共 include 根，内部头文件用根相对路径引用（如 `#include "schema/Message.h"`、`#include "provider/Provider.h"`）。
+`qh::schema`、`qh::engine`、`qh::provider`、`qh::tool`、`qh::interaction`、`qh::memory`、`qh::context`、`qh::app`、`qh::test`。`core/` 目录是 `qharness_core` 的公共 include 根，内部头文件用根相对路径引用（如 `#include "schema/Message.h"`、`#include "provider/Provider.h"`）。
 
 ## 项目专属约定
 
