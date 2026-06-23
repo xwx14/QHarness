@@ -9,19 +9,11 @@ namespace provider {
 // OpenAI 格式大模型连接（骨架，HTTP 实现待后续步骤）
 class ProviderOpenAI : public Provider {
 public:
-    ProviderOpenAI(std::string apiKey, std::string baseUrl, std::string model)
-        : apiKey_(std::move(apiKey)),
-          baseUrl_(std::move(baseUrl)),
-          model_(std::move(model)) {}
+    ProviderOpenAI(std::string apiKey, std::string baseUrl, std::string model);
 
     schema::Message generate(
         const std::vector<schema::Message>& messages,
-        const std::vector<schema::ToolDefinition>& tools) override {
-        // TODO: 基于 httplib 实现 OpenAI 格式请求与响应解析
-        (void)messages;
-        (void)tools;
-        return schema::Message{};
-    }
+        const std::vector<schema::ToolDefinition>& tools) override;
 
 private:
     std::string apiKey_;

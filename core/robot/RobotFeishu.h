@@ -9,12 +9,9 @@ namespace robot {
 // 飞书机器人连接（骨架）
 class RobotFeishu : public Robot {
 public:
-    explicit RobotFeishu(std::string webhook) : webhook_(std::move(webhook)) {}
+    explicit RobotFeishu(std::string webhook);
 
-    void send(const std::string& message) override {
-        // TODO: 基于 httplib 向飞书 webhook 推送
-        (void)message;
-    }
+    void send(const std::string& message) override;
 
 private:
     std::string webhook_;

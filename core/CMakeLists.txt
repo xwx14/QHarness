@@ -2,17 +2,17 @@
 add_library(qharness_core STATIC
     schema/Message.h        schema/Message.cpp
     engine/Engine.h
-    engine/EngineReActLoop.h
+    engine/EngineReActLoop.h    engine/EngineReActLoop.cpp
     provider/Provider.h
-    provider/ProviderOpenAI.h
-    provider/ProviderClaude.h
+    provider/ProviderOpenAI.h   provider/ProviderOpenAI.cpp
+    provider/ProviderClaude.h   provider/ProviderClaude.cpp
     tool/Tool.h
     tool/ToolRegistry.h
-    tool/ToolManager.h        tool/ToolManager.cpp
+    tool/ToolManager.h          tool/ToolManager.cpp
     robot/Robot.h
-    robot/RobotFeishu.h
+    robot/RobotFeishu.h         robot/RobotFeishu.cpp
     memory/Memory.h
-    memory/MemoryFile.h
+    memory/MemoryFile.h         memory/MemoryFile.cpp
 )
 target_include_directories(qharness_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 if(MSVC)
