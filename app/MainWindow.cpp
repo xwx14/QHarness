@@ -1,6 +1,8 @@
 #include "MainWindow.h"
-#include <QLineEdit>       // connect returnPressed + input()->text/clear
-#include <QPlainTextEdit>  // _logDock->view()->appendPlainText
+#include <QPushButton>     // connect button()->clicked
+#include <QPlainTextEdit>  // _chatDock->input()->toPlainText + _logDock->view()->appendPlainText
+#include <QShortcut>       // Ctrl+Enter 快捷发送
+#include <QKeySequence>
 #include <QTextBrowser>    // _chatDock->view()->append
 
 namespace qh {
@@ -18,7 +20,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     _chatDock = new ChatDock(this);
     addDockWidget(Qt::TopDockWidgetArea, _chatDock);
 
-    connect(_chatDock->input(), &QLineEdit::returnPressed, this, &MainWindow::onChatSend);
+    connect(_chatDock->button(), &QPushButton::clicked, this, &MainWindow::onChatSend);
+
+    // Ctrl+Enter 快捷发送（普通回车保持换行）
+    auto* sendShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return), this);
+    connect(sendShortcut, &QShortcut::activated, this, &MainWindow::onChatSend);
 
     appendLog(QStringLiteral("[UI] 主窗口与日志/对话窗口已就绪。"));
 }
@@ -28,7 +34,7 @@ void MainWindow::appendLog(const QString& text) {
 }
 
 void MainWindow::onChatSend() {
-    QString text = _chatDock->input()->text().trimmed();
+    QString text = _chatDock->input()->toPlainText().trimmed();
     if (text.isEmpty()) {
         return;
     }

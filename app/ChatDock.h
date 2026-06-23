@@ -3,22 +3,25 @@
 #include <QDockWidget>
 
 class QTextBrowser;
-class QLineEdit;
+class QPlainTextEdit;
+class QPushButton;
 
 namespace qh {
 namespace app {
 
-// 对话停靠窗口：创建并持有 QTextBrowser（显示）+ QLineEdit（输入），暴露访问器
+// 对话停靠窗口：创建并持有 QTextBrowser（显示）+ QPlainTextEdit（多行输入）+ QPushButton（发送），暴露访问器
 class ChatDock : public QDockWidget {
 public:
     explicit ChatDock(QWidget* parent = nullptr);
 
-    QTextBrowser* view() const;   // 暴露显示控件
-    QLineEdit* input() const;     // 暴露输入控件
+    QTextBrowser* view() const;        // 暴露显示控件
+    QPlainTextEdit* input() const;     // 暴露多行输入控件（回车换行）
+    QPushButton* button() const;       // 暴露发送按钮
 
 private:
     QTextBrowser* _view = nullptr;
-    QLineEdit* _input = nullptr;
+    QPlainTextEdit* _input = nullptr;
+    QPushButton* _button = nullptr;
 };
 
 } // namespace app
