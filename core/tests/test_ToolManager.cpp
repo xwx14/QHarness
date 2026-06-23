@@ -53,8 +53,11 @@ QH_TEST(toolmanager_register_and_lookup) {
 
     QH_CHECK(tm.registerTool(bash));
     QH_CHECK(tm.hasTool("bash"));
-    QH_CHECK(tm.getTool("bash") != nullptr);
-    QH_CHECK_EQ(std::string(tm.getTool("bash")->definition().name), std::string("bash"));
+    qh::tool::Tool* found = tm.getTool("bash");
+    QH_CHECK(found != nullptr);
+    if (found) {
+        QH_CHECK_EQ(std::string(found->definition().name), std::string("bash"));
+    }
 }
 
 QH_TEST(toolmanager_register_duplicate_not_replaced) {
