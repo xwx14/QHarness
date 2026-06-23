@@ -1,13 +1,14 @@
 #ifndef QH_PROVIDER_OPENAI_H
 #define QH_PROVIDER_OPENAI_H
 #include "provider/Provider.h"
+#include "qh_export.h"
 #include <string>
 
 namespace qh {
 namespace provider {
 
 // OpenAI 格式大模型连接（骨架，HTTP 实现待后续步骤）
-class ProviderOpenAI : public Provider {
+class QH_API ProviderOpenAI : public Provider {
 public:
     ProviderOpenAI(std::string apiKey, std::string baseUrl, std::string model);
 

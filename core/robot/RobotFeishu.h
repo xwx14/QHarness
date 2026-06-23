@@ -1,13 +1,14 @@
 #ifndef QH_ROBOT_FEISHU_H
 #define QH_ROBOT_FEISHU_H
 #include "robot/Robot.h"
+#include "qh_export.h"
 #include <string>
 
 namespace qh {
 namespace robot {
 
 // 飞书机器人连接（骨架）
-class RobotFeishu : public Robot {
+class QH_API RobotFeishu : public Robot {
 public:
     explicit RobotFeishu(std::string webhook);
 

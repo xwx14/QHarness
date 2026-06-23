@@ -2,12 +2,13 @@
 #define QH_PROVIDER_H
 #include <vector>
 #include "schema/Message.h"
+#include "qh_export.h"
 
 namespace qh {
 namespace provider {
 
 // 大模型连接抽象基类
-class Provider {
+class QH_API Provider {
 public:
     virtual ~Provider() = default;
     // 失败时抛 std::runtime_error（HTTP/解析错误）

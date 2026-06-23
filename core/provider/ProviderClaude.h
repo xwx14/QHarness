@@ -1,13 +1,14 @@
 #ifndef QH_PROVIDER_CLAUDE_H
 #define QH_PROVIDER_CLAUDE_H
 #include "provider/Provider.h"
+#include "qh_export.h"
 #include <string>
 
 namespace qh {
 namespace provider {
 
 // Claude 格式大模型连接（骨架）
-class ProviderClaude : public Provider {
+class QH_API ProviderClaude : public Provider {
 public:
     ProviderClaude(std::string apiKey, std::string baseUrl, std::string model);
 

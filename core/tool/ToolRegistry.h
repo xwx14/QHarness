@@ -2,13 +2,14 @@
 #define QH_TOOL_TOOLREGISTRY_H
 #include <vector>
 #include "schema/Message.h"
+#include "qh_export.h"
 
 namespace qh {
 namespace tool {
 
 // 工具注册与分发执行的抽象接口（对应 Go 的 tools.Registry）
 // engine 依赖此抽象而非具体 ToolManager（依赖倒置）
-class ToolRegistry {
+class QH_API ToolRegistry {
 public:
     virtual ~ToolRegistry() = default;
 
