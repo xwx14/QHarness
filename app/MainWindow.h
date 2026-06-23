@@ -1,11 +1,8 @@
 #ifndef QH_APP_MAINWINDOW_H
 #define QH_APP_MAINWINDOW_H
 #include <QMainWindow>
-
-class QDockWidget;
-class QPlainTextEdit;
-class QTextBrowser;
-class QLineEdit;
+#include "LogDock.h"
+#include "ChatDock.h"
 
 namespace qh {
 namespace app {
@@ -21,11 +18,8 @@ private slots:
 private:
     void appendLog(const QString& text);
 
-    QDockWidget* logDock_ = nullptr;
-    QDockWidget* chatDock_ = nullptr;
-    QPlainTextEdit* logView_ = nullptr;
-    QTextBrowser* chatView_ = nullptr;
-    QLineEdit* chatInput_ = nullptr;
+    LogDock* logDock_ = nullptr;
+    ChatDock* chatDock_ = nullptr;
 };
 
 } // namespace app
