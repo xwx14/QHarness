@@ -15,7 +15,7 @@ public:
     void send(const std::string& message) override;
 
 private:
-    std::string webhook_;
+    std::string _webhook;
 };
 
 } // namespace robot

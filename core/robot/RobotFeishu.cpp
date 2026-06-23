@@ -3,7 +3,7 @@
 namespace qh {
 namespace robot {
 
-RobotFeishu::RobotFeishu(std::string webhook) : webhook_(std::move(webhook)) {}
+RobotFeishu::RobotFeishu(std::string webhook) : _webhook(std::move(webhook)) {}
 
 void RobotFeishu::send(const std::string& message) {
     // TODO: 基于 httplib 向飞书 webhook 推送

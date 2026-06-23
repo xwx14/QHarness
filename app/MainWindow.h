@@ -18,8 +18,8 @@ private slots:
 private:
     void appendLog(const QString& text);
 
-    LogDock* logDock_ = nullptr;
-    ChatDock* chatDock_ = nullptr;
+    LogDock* _logDock = nullptr;
+    ChatDock* _chatDock = nullptr;
 };
 
 } // namespace app

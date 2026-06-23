@@ -17,8 +17,8 @@ public:
     QLineEdit* input() const;     // 暴露输入控件
 
 private:
-    QTextBrowser* view_ = nullptr;
-    QLineEdit* input_ = nullptr;
+    QTextBrowser* _view = nullptr;
+    QLineEdit* _input = nullptr;
 };
 
 } // namespace app

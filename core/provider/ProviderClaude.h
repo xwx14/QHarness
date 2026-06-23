@@ -17,9 +17,9 @@ public:
         const std::vector<schema::ToolDefinition>& tools) override;
 
 private:
-    std::string apiKey_;
-    std::string baseUrl_;
-    std::string model_;
+    std::string _apiKey;
+    std::string _baseUrl;
+    std::string _model;
 };
 
 } // namespace provider

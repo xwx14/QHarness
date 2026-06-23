@@ -4,9 +4,9 @@ namespace qh {
 namespace provider {
 
 ProviderOpenAI::ProviderOpenAI(std::string apiKey, std::string baseUrl, std::string model)
-    : apiKey_(std::move(apiKey)),
-      baseUrl_(std::move(baseUrl)),
-      model_(std::move(model)) {}
+    : _apiKey(std::move(apiKey)),
+      _baseUrl(std::move(baseUrl)),
+      _model(std::move(model)) {}
 
 schema::Message ProviderOpenAI::generate(
     const std::vector<schema::Message>& messages,

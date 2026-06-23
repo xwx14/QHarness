@@ -6,13 +6,13 @@ namespace app {
 
 LogDock::LogDock(QWidget* parent) : QDockWidget(parent) {
     setWindowTitle(QStringLiteral("日志"));
-    view_ = new QPlainTextEdit(this);
-    view_->setReadOnly(true);
-    setWidget(view_);
+    _view = new QPlainTextEdit(this);
+    _view->setReadOnly(true);
+    setWidget(_view);
 }
 
 QPlainTextEdit* LogDock::view() const {
-    return view_;
+    return _view;
 }
 
 } // namespace app

@@ -31,7 +31,7 @@ public:
     schema::ToolResult execute(const schema::ToolCall& call) override;
 
 private:
-    std::unordered_map<std::string, Tool*> tools_;  // 非拥有：调用方保证工具生命周期
+    std::unordered_map<std::string, Tool*> _tools;  // 非拥有：调用方保证工具生命周期
 };
 
 } // namespace tool

@@ -16,7 +16,7 @@ public:
     QPlainTextEdit* view() const;
 
 private:
-    QPlainTextEdit* view_ = nullptr;
+    QPlainTextEdit* _view = nullptr;
 };
 
 } // namespace app

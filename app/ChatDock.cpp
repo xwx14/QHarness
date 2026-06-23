@@ -11,20 +11,20 @@ ChatDock::ChatDock(QWidget* parent) : QDockWidget(parent) {
     setWindowTitle(QStringLiteral("对话"));
     QWidget* center = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(center);
-    view_ = new QTextBrowser(center);
-    input_ = new QLineEdit(center);
-    input_->setPlaceholderText(QStringLiteral("输入消息后回车发送..."));
-    layout->addWidget(view_);
-    layout->addWidget(input_);
+    _view = new QTextBrowser(center);
+    _input = new QLineEdit(center);
+    _input->setPlaceholderText(QStringLiteral("输入消息后回车发送..."));
+    layout->addWidget(_view);
+    layout->addWidget(_input);
     setWidget(center);
 }
 
 QTextBrowser* ChatDock::view() const {
-    return view_;
+    return _view;
 }
 
 QLineEdit* ChatDock::input() const {
-    return input_;
+    return _input;
 }
 
 } // namespace app

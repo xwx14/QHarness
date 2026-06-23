@@ -3,7 +3,7 @@
 namespace qh {
 namespace memory {
 
-MemoryFile::MemoryFile(std::string basePath) : basePath_(std::move(basePath)) {}
+MemoryFile::MemoryFile(std::string basePath) : _basePath(std::move(basePath)) {}
 
 void MemoryFile::load() {
     // TODO: 从 basePath 读取记忆

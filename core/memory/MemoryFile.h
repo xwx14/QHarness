@@ -16,7 +16,7 @@ public:
     void save() override;
 
 private:
-    std::string basePath_;
+    std::string _basePath;
 };
 
 } // namespace memory
