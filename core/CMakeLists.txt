@@ -10,8 +10,8 @@ add_library(qharness_core SHARED
     tool/Tool.h
     tool/ToolRegistry.h
     tool/ToolManager.h          tool/ToolManager.cpp
-    robot/Robot.h
-    robot/RobotFeishu.h         robot/RobotFeishu.cpp
+    interaction/Interaction.h
+    interaction/InteractionFeishu.h    interaction/InteractionFeishu.cpp
     memory/Memory.h
     memory/MemoryFile.h         memory/MemoryFile.cpp
 )

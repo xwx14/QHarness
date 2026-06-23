@@ -4,8 +4,8 @@
 #include "provider/ProviderOpenAI.h"
 #include "provider/ProviderClaude.h"
 #include "tool/Tool.h"
-#include "robot/Robot.h"
-#include "robot/RobotFeishu.h"
+#include "interaction/Interaction.h"
+#include "interaction/InteractionFeishu.h"
 #include "memory/Memory.h"
 #include "memory/MemoryFile.h"
 #include "schema/Message.h"
@@ -27,7 +27,7 @@ void touchSkeletons() {
     mf.load();
     mf.save();
 
-    robot::RobotFeishu rf("https://open.feishu.cn/hook/x");
+    interaction::InteractionFeishu rf("https://open.feishu.cn/hook/x");
     rf.send("hi");
 }
 
