@@ -21,6 +21,10 @@ bool ToolManager::hasTool(const std::string& name) const {
     return tools_.count(name) > 0;
 }
 
+bool ToolManager::unregisterTool(const std::string& name) {
+    return tools_.erase(name) > 0;
+}
+
 std::vector<schema::ToolDefinition> ToolManager::getAvailableTools() const {
     std::vector<schema::ToolDefinition> defs;
     defs.reserve(tools_.size());

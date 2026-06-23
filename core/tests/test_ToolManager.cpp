@@ -112,3 +112,17 @@ QH_TEST(toolmanager_execute_unknown_returns_error) {
     QH_CHECK_EQ(r.toolCallId, std::string("call_2"));
     QH_CHECK(r.output.find("nope") != std::string::npos);  // 错误信息含工具名
 }
+
+QH_TEST(toolmanager_unregister) {
+    qh::tool::ToolManager tm;
+    FakeTool bash("bash");
+    tm.registerTool(bash);
+
+    QH_CHECK(tm.unregisterTool("bash"));          // 注销已存在：true
+    QH_CHECK(!tm.hasTool("bash"));                // 注销后查不到
+    QH_CHECK(tm.getTool("bash") == nullptr);
+    QH_CHECK_EQ(tm.getAvailableTools().size(), static_cast<size_t>(0));
+
+    QH_CHECK(!tm.unregisterTool("bash"));         // 再次注销：false
+    QH_CHECK(!tm.unregisterTool("never"));        // 注销不存在的工具：false
+}

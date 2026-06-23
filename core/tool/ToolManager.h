@@ -22,6 +22,9 @@ public:
     // 是否存在同名工具
     bool hasTool(const std::string& name) const;
 
+    // 注销工具：按名移除；不存在返回 false
+    bool unregisterTool(const std::string& name);
+
     // 实现 ToolRegistry 契约
     std::vector<schema::ToolDefinition> getAvailableTools() const override;
     schema::ToolResult execute(const schema::ToolCall& call) override;
