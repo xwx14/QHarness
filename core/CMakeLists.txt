@@ -7,6 +7,8 @@ add_library(qharness_core STATIC
     provider/ProviderOpenAI.h
     provider/ProviderClaude.h
     tool/Tool.h
+    tool/ToolRegistry.h
+    tool/ToolManager.h        tool/ToolManager.cpp
     robot/Robot.h
     robot/RobotFeishu.h
     memory/Memory.h
@@ -26,6 +28,7 @@ add_executable(qharness_core_tests
     tests/test_ToolResult.cpp
     tests/test_ToolDefinition.cpp
     tests/test_Message.cpp
+    tests/test_ToolManager.cpp
     tests/skeleton_compile_check.cpp
 )
 target_link_libraries(qharness_core_tests PRIVATE qharness_core)
