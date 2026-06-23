@@ -16,7 +16,7 @@ public:
     // 返回当前挂载的全部工具定义（对应 Go GetAvailableTools）
     virtual std::vector<schema::ToolDefinition> getAvailableTools() const = 0;
 
-    // 按 call.name 路由并执行工具（对应 Go Execute）
+    // 按 call._name 路由并执行工具（对应 Go Execute）
     virtual schema::ToolResult execute(const schema::ToolCall& call) = 0;
 };
 

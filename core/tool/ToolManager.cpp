@@ -4,7 +4,7 @@ namespace qh {
 namespace tool {
 
 bool ToolManager::registerTool(Tool& tool) {
-    const std::string name = tool.definition().name;
+    const std::string name = tool.definition()._name;
     if (_tools.count(name) > 0) {
         return false;  // 重名：不覆盖
     }
@@ -35,12 +35,12 @@ std::vector<schema::ToolDefinition> ToolManager::getAvailableTools() const {
 }
 
 schema::ToolResult ToolManager::execute(const schema::ToolCall& call) {
-    Tool* tool = getTool(call.name);
+    Tool* tool = getTool(call._name);
     if (tool == nullptr) {
         schema::ToolResult result;
-        result.toolCallId = call.id;
-        result.output = "未找到工具: " + call.name;
-        result.isError = true;
+        result._toolCallId = call._id;
+        result._output = "未找到工具: " + call._name;
+        result._isError = true;
         return result;
     }
     return tool->execute(call);

@@ -14,7 +14,7 @@ namespace tool {
 // 工具管理器：持有多个工具的非拥有引用，负责注册/查找/分发执行
 class QH_API ToolManager : public ToolRegistry {
 public:
-    // 注册工具：以 tool.definition().name 为键；重名返回 false（不覆盖、不抛错）
+    // 注册工具：以 tool.definition()._name 为键；重名返回 false（不覆盖、不抛错）
     bool registerTool(Tool& tool);
 
     // 按名查找工具；找不到返回 nullptr

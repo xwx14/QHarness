@@ -6,9 +6,9 @@ using nlohmann::json;
 
 QH_TEST(toolcall_roundtrip_raw_json) {
     qh::schema::ToolCall tc;
-    tc.id = "call_1";
-    tc.name = "bash";
-    tc.arguments = R"({"command":"ls -la"})";
+    tc._id = "call_1";
+    tc._name = "bash";
+    tc._arguments = R"({"command":"ls -la"})";
 
     json j = tc;                                          // to_json
     QH_CHECK_EQ(std::string(j["id"]), std::string("call_1"));
@@ -16,14 +16,14 @@ QH_TEST(toolcall_roundtrip_raw_json) {
     QH_CHECK_EQ(std::string(j["arguments"]["command"]), std::string("ls -la"));
 
     auto back = j.get<qh::schema::ToolCall>();            // from_json
-    QH_CHECK_EQ(back.id, std::string("call_1"));
-    QH_CHECK_EQ(back.name, std::string("bash"));
-    QH_CHECK_EQ(back.arguments, std::string(R"({"command":"ls -la"})"));
+    QH_CHECK_EQ(back._id, std::string("call_1"));
+    QH_CHECK_EQ(back._name, std::string("bash"));
+    QH_CHECK_EQ(back._arguments, std::string(R"({"command":"ls -la"})"));
 }
 
 QH_TEST(toolcall_parse_arguments) {
     qh::schema::ToolCall tc;
-    tc.arguments = R"({"x":1,"y":[2,3]})";
+    tc._arguments = R"({"x":1,"y":[2,3]})";
     auto parsed = tc.parseArguments();
     QH_CHECK_EQ(parsed["x"].get<int>(), 1);
     QH_CHECK_EQ(parsed["y"][0].get<int>(), 2);
@@ -31,9 +31,9 @@ QH_TEST(toolcall_parse_arguments) {
 
 QH_TEST(toolcall_invalid_arguments_nothrow) {
     qh::schema::ToolCall tc;
-    tc.id = "call_err";
-    tc.name = "bad_tool";
-    tc.arguments = "not a json"; // 非法 JSON
+    tc._id = "call_err";
+    tc._name = "bad_tool";
+    tc._arguments = "not a json"; // 非法 JSON
 
     // 容错：to_json 对非法 arguments 不抛异常
     bool threw = false;

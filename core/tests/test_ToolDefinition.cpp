@@ -6,9 +6,9 @@ using nlohmann::json;
 
 QH_TEST(tooldefinition_roundtrip) {
     qh::schema::ToolDefinition td;
-    td.name = "bash";
-    td.description = "执行 shell 命令";
-    td.inputSchema = json::parse(R"({"type":"object","properties":{"command":{"type":"string"}}})");
+    td._name = "bash";
+    td._description = "执行 shell 命令";
+    td._inputSchema = json::parse(R"({"type":"object","properties":{"command":{"type":"string"}}})");
 
     json j = td;
     QH_CHECK_EQ(std::string(j["name"]), std::string("bash"));
@@ -16,6 +16,6 @@ QH_TEST(tooldefinition_roundtrip) {
     QH_CHECK(j["input_schema"]["type"].get<std::string>() == "object");
 
     auto back = j.get<qh::schema::ToolDefinition>();
-    QH_CHECK_EQ(back.name, std::string("bash"));
-    QH_CHECK(back.inputSchema["properties"]["command"]["type"].get<std::string>() == "string");
+    QH_CHECK_EQ(back._name, std::string("bash"));
+    QH_CHECK(back._inputSchema["properties"]["command"]["type"].get<std::string>() == "string");
 }
