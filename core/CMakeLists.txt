@@ -12,6 +12,7 @@ add_library(qharness_core SHARED
     provider/MockProvider.h     provider/MockProvider.cpp
     tool/Tool.h
     tool/ToolManager.h          tool/ToolManager.cpp
+    tool/MockBashTool.h         tool/MockBashTool.cpp
     interaction/Interaction.h
     interaction/InteractionFeishu.h    interaction/InteractionFeishu.cpp
     memory/Memory.h
@@ -43,6 +44,7 @@ add_executable(qharness_core_tests
     tests/test_ToolManager.cpp
     tests/test_CancellationToken.cpp
     tests/test_MockProvider.cpp
+    tests/test_MockBashTool.cpp
     tests/skeleton_compile_check.cpp
 )
 target_link_libraries(qharness_core_tests PRIVATE qharness_core)
