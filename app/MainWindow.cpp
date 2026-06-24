@@ -48,7 +48,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
 
 MainWindow::~MainWindow() {
-    // 析构前确保工作线程已结束（QThread 析构时 run 仍在会出错）
+    // 析构前确保工作线程已结束：worker 线程引用 _engine/_postMessage（raw），
+    // 必须在其结束后方可析构这些成员（QThread 析构时 run 仍在也会出错）
     if (_engineThread && _engineThread->isRunning()) {
         _engineThread->wait();
     }
@@ -72,7 +73,10 @@ void MainWindow::test()
     // 异步驱动：EngineThread（parent this）跑 engine->run
     _engineThread = new EngineThread(_engine.get(), _postMessage,
                                      "帮我检查当前目录的文件", this);
-    connect(_engineThread, &QThread::finished, this, [this] { _engineThread = nullptr; });
+    QThread* const expected = _engineThread;
+    connect(_engineThread, &QThread::finished, this, [this, expected] {
+        if (_engineThread == expected) { _engineThread = nullptr; }
+    });
     connect(_engineThread, &QThread::finished, _engineThread, &QObject::deleteLater);
     _engineThread->start();
 }
