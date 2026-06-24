@@ -57,7 +57,7 @@ build/out/Release/qharness_app.exe
 
 ### 抽象类骨架（声明/实现分离）
 
-`engine/{Engine,EngineReActLoop}`、`provider/{Provider,ProviderOpenAI,ProviderClaude}`、`tool/{Tool,ToolManager}`、`interaction/{Interaction,InteractionFeishu}`、`memory/{Memory,MemoryFile}`、`context/{Composer}`。基类纯虚（`virtual ... = 0`）；派生类的构造函数与方法体在对应 `.cpp`（骨架阶段为 `/* TODO */` 占位），头文件仅声明。`Provider::generate` 失败约定抛 `std::runtime_error`。`core/tests/skeleton_compile_check.cpp` 强制实例化各派生类做链接期检查。
+`engine/{Engine,EngineReActLoop}`、`provider/{Provider,ProviderOpenAI,ProviderClaude,MockProvider}`、`tool/{Tool,ToolManager}`、`interaction/{Interaction,InteractionFeishu}`、`memory/{Memory,MemoryFile}`、`context/{Composer}`。基类纯虚（`virtual ... = 0`）；派生类的构造函数与方法体在对应 `.cpp`（骨架阶段为 `/* TODO */` 占位），头文件仅声明。`Provider::generate` 新签名为 `generate(const CancellationToken&, messages, tools) -> GenerateResult`，失败约定 `GenerateResult::error` 非空（不再抛异常）；`CancellationToken`（`qh::provider`，轻量取消/超时，对齐 Go `context.Context` 核心语义）作为首参。`MockProvider` 忠实移植 Go `mockProvider`（`_turn` 计数：第 1 轮返回 `bash` 工具调用、第 2 轮起纯文本"任务完成"），用于引擎循环测试。`core/tests/skeleton_compile_check.cpp` 强制实例化各派生类做链接期检查。
 
 ### 命名空间
 
