@@ -16,6 +16,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     _logDock = new LogDock(this);
     addDockWidget(Qt::BottomDockWidgetArea, _logDock);
 
+    // 实时消息发送器（Qt 实现），接入日志视图；core 组件后续 setPostMessage 注入
+    _postMessage = new QPostMessage(_logDock->view(), this);
+    _postMessage->post(qh::schema::Level::Info, "QHarnesscc 已就绪");
+
     // 对话子窗口（顶部）
     _chatDock = new ChatDock(this);
     addDockWidget(Qt::TopDockWidgetArea, _chatDock);

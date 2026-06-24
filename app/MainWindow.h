@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include "LogDock.h"
 #include "ChatDock.h"
+#include "QPostMessage.h"
 
 namespace qh {
 namespace app {
@@ -20,6 +21,7 @@ private:
 
     LogDock* _logDock = nullptr;
     ChatDock* _chatDock = nullptr;
+    QPostMessage* _postMessage = nullptr;
 };
 
 } // namespace app
