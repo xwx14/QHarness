@@ -8,6 +8,7 @@ add_library(qharness_core SHARED
     provider/CancellationToken.h   provider/CancellationToken.cpp
     provider/ProviderOpenAI.h   provider/ProviderOpenAI.cpp
     provider/ProviderClaude.h   provider/ProviderClaude.cpp
+    provider/MockProvider.h     provider/MockProvider.cpp
     tool/Tool.h
     tool/ToolManager.h          tool/ToolManager.cpp
     interaction/Interaction.h
@@ -39,6 +40,7 @@ add_executable(qharness_core_tests
     tests/test_Message.cpp
     tests/test_ToolManager.cpp
     tests/test_CancellationToken.cpp
+    tests/test_MockProvider.cpp
     tests/skeleton_compile_check.cpp
 )
 target_link_libraries(qharness_core_tests PRIVATE qharness_core)

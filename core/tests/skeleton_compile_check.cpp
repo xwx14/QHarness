@@ -3,6 +3,7 @@
 #include "provider/Provider.h"
 #include "provider/ProviderOpenAI.h"
 #include "provider/ProviderClaude.h"
+#include "provider/MockProvider.h"
 #include "tool/Tool.h"
 #include "interaction/Interaction.h"
 #include "interaction/InteractionFeishu.h"
@@ -27,6 +28,8 @@ void touchSkeletons() {
         std::vector<schema::ToolDefinition> tools;
         (void)po.generate(token, msgs, tools);
         (void)pc.generate(token, msgs, tools);
+        provider::MockProvider mp;
+        (void)mp.generate(token, msgs, tools);
     }
 
     memory::MemoryFile mf("./mem");
