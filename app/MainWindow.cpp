@@ -10,6 +10,7 @@
 #include "provider/MockProvider.h"
 #include "tool/MockBashTool.h"
 #include "tool/ToolManager.h"
+#include "EngineThread.h"
 
 namespace qh {
 namespace app {
@@ -46,20 +47,34 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 }
 
 
+MainWindow::~MainWindow() {
+    // 析构前确保工作线程已结束（QThread 析构时 run 仍在会出错）
+    if (_engineThread && _engineThread->isRunning()) {
+        _engineThread->wait();
+    }
+    // _engineThread（parent this）与 unique_ptr 成员由 Qt/默认析构清理
+}
+
 void MainWindow::test()
 {
-    // 参考 Go cmd/claw/main.go：用 mock 组件跑 ReAct 循环，验证引擎 tool-call 闭环
-    qh::provider::MockProvider provider;       // turn 计数：第1轮 bash 调用，第2轮纯文本
-    qh::tool::MockBashTool bash;
-    qh::tool::ToolManager toolManager;
-    toolManager.registerTool(bash);
+    // 并发保护：上一轮仍在跑则忽略
+    if (_engineThread && _engineThread->isRunning()) {
+        return;
+    }
+    // 重建 mock + engine（重置 MockProvider turn 计数）
+    _mockProvider = std::make_unique<qh::provider::MockProvider>();
+    _mockBash = std::make_unique<qh::tool::MockBashTool>();
+    _toolManager = std::make_unique<qh::tool::ToolManager>();
+    _toolManager->registerTool(*_mockBash);
+    _engine = std::make_unique<qh::engine::EngineReActLoop>(
+        _mockProvider.get(), _toolManager.get(), QDir::currentPath().toStdString());
 
-    // 引擎注入 mock + 工作目录 + 实时消息发送器（循环日志实时显示到 LogDock）
-    qh::engine::EngineReActLoop engine(&provider, &toolManager, QDir::currentPath().toStdString());
-    engine.setPostMessage(_postMessage);
-
-    // 启动 ReAct 循环（同步；mock 两轮瞬时完成，真实 provider 后续改异步）
-    engine.run("帮我检查当前目录的文件");
+    // 异步驱动：EngineThread（parent this）跑 engine->run
+    _engineThread = new EngineThread(_engine.get(), _postMessage,
+                                     "帮我检查当前目录的文件", this);
+    connect(_engineThread, &QThread::finished, this, [this] { _engineThread = nullptr; });
+    connect(_engineThread, &QThread::finished, _engineThread, &QObject::deleteLater);
+    _engineThread->start();
 }
 
 void MainWindow::appendLog(const QString& text) {
