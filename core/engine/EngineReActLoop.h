@@ -10,6 +10,7 @@ namespace engine {
 // 典型 ReAct 循环引擎：思考(Reasoning)→行动(Action)→观察(Observation)
 class QH_API EngineReActLoop : public Engine {
 public:
+    using Engine::Engine;  // 继承基类构造 (Provider*, ToolManager*, workDir)
     void run(const std::string& userPrompt) override;
 };
 

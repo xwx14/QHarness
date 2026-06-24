@@ -19,7 +19,7 @@ namespace checks {
 // 强制实例化各派生骨架，验证接口可被实现、可被使用（编译期 + 链接期检查）
 void touchSkeletons() {
     schema::PostMessage* nullPM = nullptr;
-    engine::EngineReActLoop e;
+    engine::EngineReActLoop e(nullptr, nullptr, ".");
     e.run("hi");
 
     provider::ProviderOpenAI po("key", "https://api.example.com", "gpt-x");
