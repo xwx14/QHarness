@@ -2,6 +2,7 @@
 add_library(qharness_core SHARED
     qh_export.h
     schema/Message.h        schema/Message.cpp
+    schema/PostMessage.h    schema/PostMessage.cpp
     engine/Engine.h
     engine/EngineReActLoop.h    engine/EngineReActLoop.cpp
     provider/Provider.h
@@ -38,6 +39,7 @@ add_executable(qharness_core_tests
     tests/test_ToolResult.cpp
     tests/test_ToolDefinition.cpp
     tests/test_Message.cpp
+    tests/test_PostMessage.cpp
     tests/test_ToolManager.cpp
     tests/test_CancellationToken.cpp
     tests/test_MockProvider.cpp
