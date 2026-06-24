@@ -4,11 +4,13 @@ namespace qh {
 namespace provider {
 
 void CancellationToken::cancel() {
-    _cancelled.store(true, std::memory_order_release);
+    std::lock_guard<std::mutex> lock(_mutex);
+    _cancelled = true;
 }
 
 bool CancellationToken::isCancelled() const {
-    if (_cancelled.load(std::memory_order_acquire)) {
+    std::lock_guard<std::mutex> lock(_mutex);
+    if (_cancelled) {
         return true;
     }
     if (_deadline.has_value() &&
@@ -19,6 +21,7 @@ bool CancellationToken::isCancelled() const {
 }
 
 void CancellationToken::setDeadline(std::chrono::steady_clock::time_point deadline) {
+    std::lock_guard<std::mutex> lock(_mutex);
     _deadline = deadline;
 }
 

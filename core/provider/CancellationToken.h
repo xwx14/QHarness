@@ -1,8 +1,8 @@
 #ifndef QH_PROVIDER_CANCEL_TOKEN_H
 #define QH_PROVIDER_CANCEL_TOKEN_H
 #include "qh_export.h"
-#include <atomic>
 #include <chrono>
+#include <mutex>
 #include <optional>
 
 namespace qh {
@@ -24,7 +24,8 @@ public:
     void setDeadline(std::chrono::steady_clock::time_point deadline);
 
 private:
-    std::atomic<bool> _cancelled{false};
+    mutable std::mutex _mutex;
+    bool _cancelled{false};
     std::optional<std::chrono::steady_clock::time_point> _deadline;
 };
 
