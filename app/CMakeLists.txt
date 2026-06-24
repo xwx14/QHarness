@@ -7,6 +7,8 @@ add_executable(qharness_app WIN32
     LogDock.cpp
     QPostMessage.h
     QPostMessage.cpp
+    EngineThread.h
+    EngineThread.cpp
     ChatDock.h
     ChatDock.cpp
 )
