@@ -10,7 +10,7 @@ namespace qh {
 namespace provider {
 
 // generate 的返回结果，对齐 Go 的 (*Message, error)：error 空串表示成功
-struct GenerateResult {
+struct QH_API GenerateResult {
     schema::Message message;
     std::string error;   // 空=成功；非空=失败描述（HTTP/解析错误等）
 };
