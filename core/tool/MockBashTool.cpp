@@ -4,18 +4,19 @@
 namespace qh {
 namespace tool {
 
-schema::ToolDefinition MockBashTool::makeDefinition() {
-    schema::ToolDefinition d;
-    d._name = "bash";
-    d._description = "执行 shell 命令（mock 实现，返回固定输出）";
-    // bash 工具典型 schema：command 字符串参数
-    d._inputSchema = nlohmann::json::object();
-    d._inputSchema["type"] = "object";
-    d._inputSchema["properties"] = nlohmann::json::object();
-    d._inputSchema["properties"]["command"] = nlohmann::json::object();
-    d._inputSchema["properties"]["command"]["type"] = "string";
-    d._inputSchema["required"] = nlohmann::json::array({"command"});
-    return d;
+
+
+MockBashTool::MockBashTool()
+{
+	_definition._name = "bash";
+	_definition._description = "执行 shell 命令（mock 实现，返回固定输出）";
+	// bash 工具典型 schema：command 字符串参数
+	_definition._inputSchema = nlohmann::json::object();
+	_definition._inputSchema["type"] = "object";
+	_definition._inputSchema["properties"] = nlohmann::json::object();
+	_definition._inputSchema["properties"]["command"] = nlohmann::json::object();
+	_definition._inputSchema["properties"]["command"]["type"] = "string";
+	_definition._inputSchema["required"] = nlohmann::json::array({ "command" });
 }
 
 schema::ToolResult MockBashTool::execute(const schema::ToolCall& call) {
