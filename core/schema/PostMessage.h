@@ -20,10 +20,19 @@ public:
 };
 
 // 持有 PostMessage 的 mixin：core 类继承它获得「注入实时消息发送器」能力（DRY）
+// post/info/warn/error 为非虚便利转发方法：_postMessage 为空则不处理，否则转发
 class QH_API PostMessageInterface {
 public:
     virtual ~PostMessageInterface() = default;
     void setPostMessage(PostMessage* pm) { _postMessage = pm; }
+    // 转发：_postMessage 为空则不处理，否则调用其 post
+    void post(Level level, const std::string& msg) {
+        if (_postMessage) { _postMessage->post(level, msg); }
+    }
+    // 便利方法：固定级别 + 仅字符串
+    void info(const std::string& msg)  { post(Level::Info, msg); }
+    void warn(const std::string& msg)  { post(Level::Warn, msg); }
+    void error(const std::string& msg) { post(Level::Error, msg); }
 protected:
     PostMessage* _postMessage = nullptr;  // 非拥有，由 app 注入
 };

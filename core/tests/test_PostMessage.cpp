@@ -47,3 +47,39 @@ QH_TEST(postmessage_interface_injection) {
     h.setPostMessage(&pm);
     QH_CHECK(h.posted() == &pm);  // 注入后可取回
 }
+
+// 验证 PostMessageInterface::post 转发到注入的 PostMessage
+QH_TEST(postmessage_interface_forwards_post) {
+    Holder h;
+    FakePostMessage pm;
+    h.setPostMessage(&pm);
+    h.post(qh::schema::Level::Warn, "direct");
+    QH_CHECK_EQ(pm._messages.size(), static_cast<size_t>(1));
+    QH_CHECK_EQ(pm._messages[0], std::string("direct"));
+    QH_CHECK(pm._levels[0] == qh::schema::Level::Warn);
+}
+
+// 验证 info/warn/error 便利方法映射到对应 Level
+QH_TEST(postmessage_interface_info_warn_error_levels) {
+    Holder h;
+    FakePostMessage pm;
+    h.setPostMessage(&pm);
+    h.info("i");
+    h.warn("w");
+    h.error("e");
+    QH_CHECK_EQ(pm._messages.size(), static_cast<size_t>(3));
+    QH_CHECK(pm._levels[0] == qh::schema::Level::Info);
+    QH_CHECK(pm._levels[1] == qh::schema::Level::Warn);
+    QH_CHECK(pm._levels[2] == qh::schema::Level::Error);
+    QH_CHECK_EQ(pm._messages[2], std::string("e"));
+}
+
+// 验证 _postMessage 为空时调用不崩溃（null 安全）
+QH_TEST(postmessage_interface_null_safe) {
+    Holder h;  // 不注入，_postMessage 为 nullptr
+    h.info("x");
+    h.warn("y");
+    h.error("z");
+    h.post(qh::schema::Level::Info, "p");
+    QH_CHECK(h.posted() == nullptr);  // 仍未注入
+}
