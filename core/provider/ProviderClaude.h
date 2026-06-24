@@ -12,7 +12,8 @@ class QH_API ProviderClaude : public Provider {
 public:
     ProviderClaude(std::string apiKey, std::string baseUrl, std::string model);
 
-    schema::Message generate(
+    GenerateResult generate(
+        const CancellationToken& cancel,
         const std::vector<schema::Message>& messages,
         const std::vector<schema::ToolDefinition>& tools) override;
 

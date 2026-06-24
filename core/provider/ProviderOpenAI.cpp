@@ -8,13 +8,12 @@ ProviderOpenAI::ProviderOpenAI(std::string apiKey, std::string baseUrl, std::str
       _baseUrl(std::move(baseUrl)),
       _model(std::move(model)) {}
 
-schema::Message ProviderOpenAI::generate(
-    const std::vector<schema::Message>& messages,
-    const std::vector<schema::ToolDefinition>& tools) {
+GenerateResult ProviderOpenAI::generate(
+    const CancellationToken& /*cancel*/,
+    const std::vector<schema::Message>& /*messages*/,
+    const std::vector<schema::ToolDefinition>& /*tools*/) {
     // TODO: 基于 httplib 实现 OpenAI 格式请求与响应解析
-    (void)messages;
-    (void)tools;
-    return schema::Message{};
+    return GenerateResult{};
 }
 
 } // namespace provider

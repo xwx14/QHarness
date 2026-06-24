@@ -21,8 +21,13 @@ void touchSkeletons() {
 
     provider::ProviderOpenAI po("key", "https://api.example.com", "gpt-x");
     provider::ProviderClaude pc("key", "https://api.example.com", "claude-x");
-    (void)po;
-    (void)pc;
+    {
+        provider::CancellationToken token;
+        std::vector<schema::Message> msgs;
+        std::vector<schema::ToolDefinition> tools;
+        (void)po.generate(token, msgs, tools);
+        (void)pc.generate(token, msgs, tools);
+    }
 
     memory::MemoryFile mf("./mem");
     mf.load();

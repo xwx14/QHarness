@@ -8,13 +8,12 @@ ProviderClaude::ProviderClaude(std::string apiKey, std::string baseUrl, std::str
       _baseUrl(std::move(baseUrl)),
       _model(std::move(model)) {}
 
-schema::Message ProviderClaude::generate(
-    const std::vector<schema::Message>& messages,
-    const std::vector<schema::ToolDefinition>& tools) {
+GenerateResult ProviderClaude::generate(
+    const CancellationToken& /*cancel*/,
+    const std::vector<schema::Message>& /*messages*/,
+    const std::vector<schema::ToolDefinition>& /*tools*/) {
     // TODO: 基于 httplib 实现 Claude 格式请求与响应解析
-    (void)messages;
-    (void)tools;
-    return schema::Message{};
+    return GenerateResult{};
 }
 
 } // namespace provider
