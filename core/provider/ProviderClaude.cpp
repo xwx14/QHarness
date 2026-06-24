@@ -9,7 +9,7 @@ ProviderClaude::ProviderClaude(std::string apiKey, std::string baseUrl, std::str
       _model(std::move(model)) {}
 
 GenerateResult ProviderClaude::generate(
-    const CancellationToken& /*cancel*/,
+    const schema::CancellationToken& /*cancel*/,
     const std::vector<schema::Message>& /*messages*/,
     const std::vector<schema::ToolDefinition>& /*tools*/) {
     // TODO: 基于 httplib 实现 Claude 格式请求与响应解析

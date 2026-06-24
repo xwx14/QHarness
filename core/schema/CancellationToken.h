@@ -1,12 +1,12 @@
-#ifndef QH_PROVIDER_CANCEL_TOKEN_H
-#define QH_PROVIDER_CANCEL_TOKEN_H
+#ifndef QH_SCHEMA_CANCEL_TOKEN_H
+#define QH_SCHEMA_CANCEL_TOKEN_H
 #include "qh_export.h"
 #include <chrono>
 #include <mutex>
 #include <optional>
 
 namespace qh {
-namespace provider {
+namespace schema {
 
 // 轻量取消/超时令牌，对齐 Go context.Context 的取消与超时核心语义（不含 Value map）
 // 纯 C++17、零外部依赖；provider 在耗时循环中协作式查询 isCancelled()
@@ -29,6 +29,6 @@ private:
     std::optional<std::chrono::steady_clock::time_point> _deadline;
 };
 
-} // namespace provider
+} // namespace schema
 } // namespace qh
-#endif // QH_PROVIDER_CANCEL_TOKEN_H
+#endif // QH_SCHEMA_CANCEL_TOKEN_H

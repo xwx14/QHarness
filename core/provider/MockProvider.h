@@ -11,7 +11,7 @@ namespace provider {
 class QH_API MockProvider : public Provider {
 public:
     GenerateResult generate(
-        const CancellationToken& cancel,
+        const schema::CancellationToken& cancel,
         const std::vector<schema::Message>& messages,
         const std::vector<schema::ToolDefinition>& tools) override;
 

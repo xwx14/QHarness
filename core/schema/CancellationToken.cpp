@@ -1,7 +1,7 @@
-#include "provider/CancellationToken.h"
+#include "schema/CancellationToken.h"
 
 namespace qh {
-namespace provider {
+namespace schema {
 
 void CancellationToken::cancel() {
     std::lock_guard<std::mutex> lock(_mutex);
@@ -25,5 +25,5 @@ void CancellationToken::setDeadline(std::chrono::steady_clock::time_point deadli
     _deadline = deadline;
 }
 
-} // namespace provider
+} // namespace schema
 } // namespace qh

@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include "schema/Message.h"
-#include "provider/CancellationToken.h"
+#include "schema/CancellationToken.h"
 #include "schema/PostMessage.h"
 #include "qh_export.h"
 
@@ -22,7 +22,7 @@ public:
     virtual ~Provider() = default;
     // 失败时 error 非空（不再抛异常）；provider 应在耗时点协作式检查 cancel.isCancelled()
     virtual GenerateResult generate(
-        const CancellationToken& cancel,
+        const schema::CancellationToken& cancel,
         const std::vector<schema::Message>& messages,
         const std::vector<schema::ToolDefinition>& tools) = 0;
 };

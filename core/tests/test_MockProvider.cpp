@@ -1,13 +1,13 @@
 #include "TestHarness.h"
 #include "provider/MockProvider.h"
-#include "provider/CancellationToken.h"
+#include "schema/CancellationToken.h"
 #include "schema/Message.h"
 #include <string>
 #include <vector>
 
 QH_TEST(mockprovider_first_turn_returns_bash_toolcall) {
     qh::provider::MockProvider provider;
-    qh::provider::CancellationToken token;
+    qh::schema::CancellationToken token;
     std::vector<qh::schema::Message> messages;
     std::vector<qh::schema::ToolDefinition> tools;
 
@@ -24,7 +24,7 @@ QH_TEST(mockprovider_first_turn_returns_bash_toolcall) {
 
 QH_TEST(mockprovider_second_turn_returns_plain_text) {
     qh::provider::MockProvider provider;
-    qh::provider::CancellationToken token;
+    qh::schema::CancellationToken token;
     std::vector<qh::schema::Message> messages;
     std::vector<qh::schema::ToolDefinition> tools;
 

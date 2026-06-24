@@ -3,10 +3,10 @@ add_library(qharness_core SHARED
     qh_export.h
     schema/Message.h        schema/Message.cpp
     schema/PostMessage.h    schema/PostMessage.cpp
+    schema/CancellationToken.h   schema/CancellationToken.cpp
     engine/Engine.h
     engine/EngineReActLoop.h    engine/EngineReActLoop.cpp
     provider/Provider.h
-    provider/CancellationToken.h   provider/CancellationToken.cpp
     provider/ProviderOpenAI.h   provider/ProviderOpenAI.cpp
     provider/ProviderClaude.h   provider/ProviderClaude.cpp
     provider/MockProvider.h     provider/MockProvider.cpp

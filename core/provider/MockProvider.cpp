@@ -4,7 +4,7 @@ namespace qh {
 namespace provider {
 
 GenerateResult MockProvider::generate(
-    const CancellationToken& /*cancel*/,
+    const schema::CancellationToken& /*cancel*/,
     const std::vector<schema::Message>& /*messages*/,
     const std::vector<schema::ToolDefinition>& /*tools*/) {
     ++_turn;
