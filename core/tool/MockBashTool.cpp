@@ -4,7 +4,7 @@
 namespace qh {
 namespace tool {
 
-schema::ToolDefinition MockBashTool::definition() const {
+schema::ToolDefinition MockBashTool::makeDefinition() {
     schema::ToolDefinition d;
     d._name = "bash";
     d._description = "执行 shell 命令（mock 实现，返回固定输出）";

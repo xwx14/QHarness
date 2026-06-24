@@ -13,15 +13,7 @@ namespace {
 class FakeTool : public qh::tool::Tool {
 public:
     FakeTool(std::string name, std::string output = "ok")
-        : _name(std::move(name)), _output(std::move(output)) {}
-
-    qh::schema::ToolDefinition definition() const override {
-        qh::schema::ToolDefinition d;
-        d._name = _name;
-        d._description = "fake tool for test";
-        d._inputSchema = json::object();
-        return d;
-    }
+        : Tool(makeDef(name)), _output(std::move(output)) {}
 
     qh::schema::ToolResult execute(const qh::schema::ToolCall& call) override {
         qh::schema::ToolResult r;
@@ -32,7 +24,13 @@ public:
     }
 
 private:
-    std::string _name;
+    static qh::schema::ToolDefinition makeDef(const std::string& name) {
+        qh::schema::ToolDefinition d;
+        d._name = name;
+        d._description = "fake tool for test";
+        d._inputSchema = json::object();
+        return d;
+    }
     std::string _output;
 };
 
