@@ -5,6 +5,7 @@ add_library(qharness_core SHARED
     engine/Engine.h
     engine/EngineReActLoop.h    engine/EngineReActLoop.cpp
     provider/Provider.h
+    provider/CancellationToken.h   provider/CancellationToken.cpp
     provider/ProviderOpenAI.h   provider/ProviderOpenAI.cpp
     provider/ProviderClaude.h   provider/ProviderClaude.cpp
     tool/Tool.h
@@ -37,6 +38,7 @@ add_executable(qharness_core_tests
     tests/test_ToolDefinition.cpp
     tests/test_Message.cpp
     tests/test_ToolManager.cpp
+    tests/test_CancellationToken.cpp
     tests/skeleton_compile_check.cpp
 )
 target_link_libraries(qharness_core_tests PRIVATE qharness_core)
