@@ -1,0 +1,3 @@
+core\schema中新提供一个PostMessage抽象类，用于在某些函数运行时，可以实时向Qt窗口或其他接口发送日志消息或通知消息。在其他的类中放置此类实例的指针，用于实时消息发送。
+
+在app模块实现一个QPostMessage类，继承自PostMessage，用于将实时发送的信息显示在logDock

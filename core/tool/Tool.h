@@ -1,13 +1,14 @@
 #ifndef QH_TOOL_H
 #define QH_TOOL_H
 #include "schema/Message.h"
+#include "schema/PostMessage.h"
 #include "qh_export.h"
 
 namespace qh {
 namespace tool {
 
-// 工具抽象基类（edit/read/bash 等工具的基类）
-class QH_API Tool {
+// 工具抽象基类（edit/read/bash 等工具的基类）；继承 PostMessageInterface 获得实时消息注入
+class QH_API Tool : public schema::PostMessageInterface {
 public:
     virtual ~Tool() = default;
     virtual schema::ToolDefinition definition() const = 0;

@@ -4,6 +4,7 @@
 #include <vector>
 #include "schema/Message.h"
 #include "provider/CancellationToken.h"
+#include "schema/PostMessage.h"
 #include "qh_export.h"
 
 namespace qh {
@@ -16,7 +17,7 @@ struct QH_API GenerateResult {
 };
 
 // 大模型连接抽象基类
-class QH_API Provider {
+class QH_API Provider : public schema::PostMessageInterface {
 public:
     virtual ~Provider() = default;
     // 失败时 error 非空（不再抛异常）；provider 应在耗时点协作式检查 cancel.isCancelled()
