@@ -19,8 +19,9 @@ namespace checks {
 // 强制实例化各派生骨架，验证接口可被实现、可被使用（编译期 + 链接期检查）
 void touchSkeletons() {
     schema::PostMessage* nullPM = nullptr;
+    // 仅实例化验证构造签名；run() 的运行验证由 test_EngineReActLoop 负责
+    // （此处 _provider/_toolManager 为 nullptr，不可调 run，否则解引用空指针）
     engine::EngineReActLoop e(nullptr, nullptr, ".");
-    e.run("hi");
 
     provider::ProviderOpenAI po("key", "https://api.example.com", "gpt-x");
     provider::ProviderClaude pc("key", "https://api.example.com", "claude-x");
