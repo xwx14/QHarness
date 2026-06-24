@@ -7,6 +7,8 @@ namespace app {
 
 QPostMessage::QPostMessage(QPlainTextEdit* view, QObject* parent)
     : QObject(parent), _view(view) {
+    // 运行期注册 Level（跨线程 QueuedConnection 传递所需；enum class 默认未注册）
+    qRegisterMetaType<qh::schema::Level>("qh::schema::Level");
     // 信号 → view 追加；lambda 加级别前缀。AutoConnection 跨线程自动 QueuedConnection
     connect(this, &QPostMessage::messagePosted, _view,
         [this](qh::schema::Level level, const QString& msg) {

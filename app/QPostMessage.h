@@ -2,7 +2,12 @@
 #define QH_APP_QPOSTMESSAGE_H
 #include <QObject>
 #include <QString>
+#include <QMetaType>
 #include "schema/PostMessage.h"
+
+// 注册 Level 到 Qt 元类型系统：QPostMessage::messagePosted 信号跨线程（QueuedConnection）
+// 传递 Level 参数所需——enum class 默认未注册，跨线程投递会被 Qt 静默丢弃
+Q_DECLARE_METATYPE(qh::schema::Level)
 
 class QPlainTextEdit;
 
