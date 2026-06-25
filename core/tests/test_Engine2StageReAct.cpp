@@ -60,10 +60,10 @@ QH_TEST(engine2stage_thinking_on_runs_two_phases) {
 
     engine.run("帮我检查当前目录的文件");
 
-    QH_CHECK(hasLevelContaining(pm, qh::schema::Level::Think, "分析"));   // Phase1 思考走 Think
+    QH_CHECK(hasLevelContaining(pm, qh::schema::Level::Think, "推理中"));   // Phase1 思考走 Think
     QH_CHECK(hasInfoContaining(pm, "执行工具"));          // Phase2 工具调用
     QH_CHECK(hasInfoContaining(pm, "任务完成"));          // 循环正常退出
-    QH_CHECK(hasLevelContaining(pm, qh::schema::Level::Chat, "看到了文件"));  // 模型回复走 Chat
+    QH_CHECK(hasLevelContaining(pm, qh::schema::Level::Chat, "任务圆满完成"));  // 模型回复走 Chat
     QH_CHECK(!hasAnyError(pm));
 }
 
@@ -80,9 +80,9 @@ QH_TEST(engine2stage_thinking_off_behaves_like_react) {
 
     engine.run("帮我检查当前目录的文件");
 
-    QH_CHECK(!hasLevelContaining(pm, qh::schema::Level::Think, "分析"));   // 关闭则无 Phase1 思考
+    QH_CHECK(!hasLevelContaining(pm, qh::schema::Level::Think, "推理中"));   // 关闭则无 Phase1 思考
     QH_CHECK(hasInfoContaining(pm, "执行工具"));
     QH_CHECK(hasInfoContaining(pm, "任务完成"));
-    QH_CHECK(hasLevelContaining(pm, qh::schema::Level::Chat, "看到了文件"));  // 模型回复走 Chat
+    QH_CHECK(hasLevelContaining(pm, qh::schema::Level::Chat, "任务圆满完成"));  // 模型回复走 Chat
     QH_CHECK(!hasAnyError(pm));
 }
