@@ -1,6 +1,5 @@
 #include "MockHttpServer.h"
 #include "provider/ProviderHttp.h"
-#include "schema/CancellationToken.h"
 #include "TestHarness.h"
 
 QH_TEST(ProviderHttp_post_success) {
