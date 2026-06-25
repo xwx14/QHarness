@@ -8,6 +8,8 @@ std::string levelToString(Level level) {
         case Level::Info:  return "[INFO]";
         case Level::Warn:  return "[WARN]";
         case Level::Error: return "[ERROR]";
+        case Level::Chat:  return "[CHAT]";
+        case Level::Think: return "[THINK]";
     }
     return "[INFO]";
 }

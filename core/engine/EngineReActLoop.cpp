@@ -34,7 +34,7 @@ void EngineReActLoop::run(const std::string& userPrompt) {
 
         history.push_back(result.message);
         if (!result.message._content.empty()) {
-            info("模型: " + result.message._content);
+            chat(result.message._content);
         }
 
         // 退出条件：模型未请求任何工具，任务完成

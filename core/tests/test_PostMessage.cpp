@@ -21,6 +21,8 @@ QH_TEST(postmessage_level_to_string) {
     QH_CHECK_EQ(qh::schema::levelToString(qh::schema::Level::Info), std::string("[INFO]"));
     QH_CHECK_EQ(qh::schema::levelToString(qh::schema::Level::Warn), std::string("[WARN]"));
     QH_CHECK_EQ(qh::schema::levelToString(qh::schema::Level::Error), std::string("[ERROR]"));
+    QH_CHECK_EQ(qh::schema::levelToString(qh::schema::Level::Chat), std::string("[CHAT]"));
+    QH_CHECK_EQ(qh::schema::levelToString(qh::schema::Level::Think), std::string("[THINK]"));
 }
 
 QH_TEST(postmessage_post_collects_messages) {
@@ -72,6 +74,19 @@ QH_TEST(postmessage_interface_info_warn_error_levels) {
     QH_CHECK(pm._levels[1] == qh::schema::Level::Warn);
     QH_CHECK(pm._levels[2] == qh::schema::Level::Error);
     QH_CHECK_EQ(pm._messages[2], std::string("e"));
+}
+
+// 验证 chat/think 便利方法映射到 Level::Chat/Level::Think
+QH_TEST(postmessage_interface_chat_think_levels) {
+    Holder h;
+    FakePostMessage pm;
+    h.setPostMessage(&pm);
+    h.chat("c");
+    h.think("t");
+    QH_CHECK_EQ(pm._messages.size(), static_cast<size_t>(2));
+    QH_CHECK(pm._levels[0] == qh::schema::Level::Chat);
+    QH_CHECK(pm._levels[1] == qh::schema::Level::Think);
+    QH_CHECK_EQ(pm._messages[0], std::string("c"));
 }
 
 // 验证 _postMessage 为空时调用不崩溃（null 安全）

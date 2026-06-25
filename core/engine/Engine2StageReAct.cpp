@@ -44,7 +44,7 @@ void Engine2StageReAct::run(const std::string& userPrompt) {
                 return;
             }
             if (!thinkResult.message._content.empty()) {
-                info("内部思考 Trace: " + thinkResult.message._content);
+                think(thinkResult.message._content);
                 history.push_back(thinkResult.message);
             }
         }
@@ -58,7 +58,7 @@ void Engine2StageReAct::run(const std::string& userPrompt) {
         }
         history.push_back(actionResult.message);
         if (!actionResult.message._content.empty()) {
-            info("模型: " + actionResult.message._content);
+            chat(actionResult.message._content);
         }
 
         // 退出条件：模型未请求工具，任务完成

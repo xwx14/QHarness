@@ -7,7 +7,7 @@ namespace qh {
 namespace schema {
 
 // 消息级别（日志/通知的严重性）
-enum class Level { Info, Warn, Error };
+enum class Level { Info, Warn, Error, Chat, Think };
 
 QH_API std::string levelToString(Level level);
 
@@ -33,6 +33,8 @@ public:
     void info(const std::string& msg)  { post(Level::Info, msg); }
     void warn(const std::string& msg)  { post(Level::Warn, msg); }
     void error(const std::string& msg) { post(Level::Error, msg); }
+    void chat(const std::string& msg)  { post(Level::Chat, msg); }
+    void think(const std::string& msg) { post(Level::Think, msg); }
 protected:
     PostMessage* _postMessage = nullptr;  // 非拥有，由 app 注入
 };
