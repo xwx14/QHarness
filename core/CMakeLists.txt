@@ -12,6 +12,7 @@ add_library(qharness_core SHARED
     provider/ProviderClaude.h   provider/ProviderClaude.cpp
     provider/MockProvider.h     provider/MockProvider.cpp
     provider/MockTwoStageProvider.h provider/MockTwoStageProvider.cpp
+    provider/ProviderHttp.h        provider/ProviderHttp.cpp
     tool/Tool.h
     tool/ToolManager.h          tool/ToolManager.cpp
     tool/MockBashTool.h         tool/MockBashTool.cpp
@@ -23,6 +24,21 @@ add_library(qharness_core SHARED
 )
 target_include_directories(qharness_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(qharness_core PRIVATE QH_BUILDING_DLL)
+
+# OpenSSL（vcpkg 3.6.3，dynamic）：httplib SSLClient 依赖
+set(OPENSSL_ROOT_DIR "E:/vcpkg/installed/x64-windows" CACHE PATH "vcpkg OpenSSL 安装根")
+find_package(OpenSSL REQUIRED)
+target_link_libraries(qharness_core PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+target_compile_definitions(qharness_core PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
+
+# OpenSSL 运行时 dll 部署到 core 输出目录（qharness_core.dll 加载需；
+# qharness_core_tests.exe / qharness_app.exe 同目录运行也需）
+add_custom_command(TARGET qharness_core POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${OPENSSL_ROOT_DIR}/bin/libcrypto-3-x64.dll"
+        "${OPENSSL_ROOT_DIR}/bin/libssl-3-x64.dll"
+        $<TARGET_FILE_DIR:qharness_core>)
+
 # core 为 SHARED：DLL 与导入库统一输出到 build/out/<config>（与 exe 同目录）
 set_target_properties(qharness_core PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/out"
