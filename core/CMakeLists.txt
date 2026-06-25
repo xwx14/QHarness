@@ -68,6 +68,7 @@ add_executable(qharness_core_tests
     tests/test_Engine2StageReAct.cpp
     tests/MockHttpServer.h
     tests/test_ProviderHttp.cpp
+    tests/test_ProviderOpenAI.cpp
     tests/skeleton_compile_check.cpp
 )
 target_link_libraries(qharness_core_tests PRIVATE qharness_core)
