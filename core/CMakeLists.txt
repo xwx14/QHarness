@@ -6,10 +6,12 @@ add_library(qharness_core SHARED
     schema/CancellationToken.h   schema/CancellationToken.cpp
     engine/Engine.h
     engine/EngineReActLoop.h    engine/EngineReActLoop.cpp
+    engine/Engine2StageReAct.h engine/Engine2StageReAct.cpp
     provider/Provider.h
     provider/ProviderOpenAI.h   provider/ProviderOpenAI.cpp
     provider/ProviderClaude.h   provider/ProviderClaude.cpp
     provider/MockProvider.h     provider/MockProvider.cpp
+    provider/MockTwoStageProvider.h provider/MockTwoStageProvider.cpp
     tool/Tool.h
     tool/ToolManager.h          tool/ToolManager.cpp
     tool/MockBashTool.h         tool/MockBashTool.cpp
@@ -44,8 +46,10 @@ add_executable(qharness_core_tests
     tests/test_ToolManager.cpp
     tests/test_CancellationToken.cpp
     tests/test_MockProvider.cpp
+    tests/test_MockTwoStageProvider.cpp
     tests/test_MockBashTool.cpp
     tests/test_EngineReActLoop.cpp
+    tests/test_Engine2StageReAct.cpp
     tests/skeleton_compile_check.cpp
 )
 target_link_libraries(qharness_core_tests PRIVATE qharness_core)

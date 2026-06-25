@@ -1,9 +1,11 @@
 #include "engine/Engine.h"
 #include "engine/EngineReActLoop.h"
+#include "engine/Engine2StageReAct.h"
 #include "provider/Provider.h"
 #include "provider/ProviderOpenAI.h"
 #include "provider/ProviderClaude.h"
 #include "provider/MockProvider.h"
+#include "provider/MockTwoStageProvider.h"
 #include "tool/Tool.h"
 #include "interaction/Interaction.h"
 #include "interaction/InteractionFeishu.h"
@@ -22,6 +24,8 @@ void touchSkeletons() {
     // 仅实例化验证构造签名；run() 的运行验证由 test_EngineReActLoop 负责
     // （此处 _provider/_toolManager 为 nullptr，不可调 run，否则解引用空指针）
     engine::EngineReActLoop e(nullptr, nullptr, ".");
+    engine::Engine2StageReAct e2(nullptr, nullptr, ".", true);
+    e2.setEnableThinking(false);
 
     provider::ProviderOpenAI po("key", "https://api.example.com", "gpt-x");
     provider::ProviderClaude pc("key", "https://api.example.com", "claude-x");
@@ -34,6 +38,9 @@ void touchSkeletons() {
         provider::MockProvider mp;
         (void)mp.generate(token, msgs, tools);
         mp.setPostMessage(nullPM);
+        provider::MockTwoStageProvider m2;
+        (void)m2.generate(token, msgs, tools);
+        m2.setPostMessage(nullPM);
     }
 
     memory::MemoryFile mf("./mem");
@@ -48,6 +55,7 @@ void touchSkeletons() {
 
     // 验证 PostMessageInterface 注入接口（各骨架类继承后可用 setPostMessage）
     e.setPostMessage(nullPM);
+    e2.setPostMessage(nullPM);
     po.setPostMessage(nullPM);
     pc.setPostMessage(nullPM);
     mf.setPostMessage(nullPM);
