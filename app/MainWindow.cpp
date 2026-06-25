@@ -6,10 +6,6 @@
 #include <QTextBrowser>    // _chatDock->view()->append
 #include <QToolBar>        // 「测试」按钮工具栏
 #include <QDir>            // workDir = currentPath
-#include "engine/EngineReActLoop.h"
-#include "provider/MockProvider.h"
-#include "tool/MockBashTool.h"
-#include "tool/ToolManager.h"
 #include "EngineThread.h"
 
 namespace qh {
@@ -47,32 +43,16 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 }
 
 
-MainWindow::~MainWindow() {
-    // 析构前确保工作线程已结束：worker 线程引用 _engine/_postMessage（raw），
-    // 必须在其结束后方可析构这些成员（QThread 析构时 run 仍在也会出错）
-    if (_engineThread && _engineThread->isRunning()) {
-        _engineThread->wait();
-    }
-    // _engineThread（parent this）与 unique_ptr 成员由 Qt/默认析构清理
-}
-
 void MainWindow::test()
 {
     // 并发保护：上一轮仍在跑则忽略
     if (_engineThread && _engineThread->isRunning()) {
         return;
     }
-    // 重建 mock + engine（重置 MockProvider turn 计数）
-    _mockProvider = std::make_unique<qh::provider::MockProvider>();
-    _mockBash = std::make_unique<qh::tool::MockBashTool>();
-    _toolManager = std::make_unique<qh::tool::ToolManager>();
-    _toolManager->registerTool(*_mockBash);
-    _engine = std::make_unique<qh::engine::EngineReActLoop>(
-        _mockProvider.get(), _toolManager.get(), QDir::currentPath().toStdString());
-
-    // 异步驱动：EngineThread（parent this）跑 engine->run
-    _engineThread = new EngineThread(_engine.get(), _postMessage,
-                                     "帮我检查当前目录的文件", this);
+    // 异步驱动：每次 new 一套 mock+engine（封装在 EngineThread 内，turn 计数天然重置）
+    _engineThread = new EngineThread(_postMessage,
+                                     "帮我检查当前目录的文件",
+                                     QDir::currentPath().toStdString(), this);
     QThread* const expected = _engineThread;
     connect(_engineThread, &QThread::finished, this, [this, expected] {
         if (_engineThread == expected) { _engineThread = nullptr; }
@@ -86,7 +66,6 @@ void MainWindow::appendLog(const QString& text) {
 }
 
 void MainWindow::onChatSend() {
-    test();
     QString text = _chatDock->input()->toPlainText().trimmed();
     if (text.isEmpty()) {
         return;
