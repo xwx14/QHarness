@@ -36,3 +36,6 @@ qrc_*
 # 本地技术文档（不纳入版本管理）
 docs/技术文档/
 /.claude/skills/gongzhonghao-article
+
+# OpenSSL 产物（vcpkg 复制到 third/openssl，不 commit 二进制；来源见 third/openssl-README.md）
+third/openssl/
