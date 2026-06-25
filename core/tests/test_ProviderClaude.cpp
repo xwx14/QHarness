@@ -88,3 +88,28 @@ QH_TEST(ProviderClaude_http_error) {
     QH_CHECK(!r.error.empty());
     QH_CHECK(r.error.find("server boom") != std::string::npos);
 }
+
+QH_TEST(ProviderClaude_cancelled) {
+    qh::provider::ProviderClaude p("k", "http://127.0.0.1:18181/v1", "claude-sonnet-4-6");
+    qh::schema::CancellationToken cancel;
+    cancel.cancel();
+    auto r = p.generate(cancel, {qh::schema::Message{}}, {});
+    QH_CHECK_EQ(r.error, std::string("cancelled"));
+}
+
+QH_TEST(ProviderClaude_request_tools) {
+    qh::test::MockHttpServer svr; QH_CHECK(svr.start());
+    svr.onPost("/v1/messages", 200, kClaudeTextResp);
+
+    qh::provider::ProviderClaude p("k", svr.baseUrl(), "claude-sonnet-4-6");
+    qh::schema::CancellationToken cancel;
+    qh::schema::ToolDefinition td;
+    td._name = "bash"; td._description = "run shell"; td._inputSchema = json::object();
+    p.generate(cancel, {qh::schema::Message{}}, {td});
+
+    json sent = json::parse(svr.lastBody(), nullptr, false);
+    QH_CHECK(sent.contains("tools"));
+    QH_CHECK_EQ(sent["tools"][0]["name"].get<std::string>(), std::string("bash"));
+    QH_CHECK(sent["tools"][0].contains("input_schema"));
+    QH_CHECK(sent["tool_choice"]["type"] == "auto");
+}
