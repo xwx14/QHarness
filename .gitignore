@@ -37,5 +37,9 @@ qrc_*
 docs/技术文档/
 /.claude/skills/gongzhonghao-article
 
-# OpenSSL 产物（vcpkg 复制到 third/openssl，不 commit 二进制；来源见 third/openssl-README.md）
-third/openssl/
+# OpenSSL 产物（third/openssl 提交进版本管理，例外全局 *.lib/*.dll 忽略）
+!third/openssl/
+!third/openssl/**
+
+# SDD scratch（superpowers subagent-driven-development 临时文件，不提交）
+.superpowers/

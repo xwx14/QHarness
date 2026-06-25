@@ -26,9 +26,9 @@ target_include_directories(qharness_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(qharness_core PRIVATE QH_BUILDING_DLL)
 
 # OpenSSL（vcpkg 3.6.3，dynamic）：httplib SSLClient 依赖。
-# 产物在 third/openssl/x64-windows：Release 用 lib/+bin/，Debug 用 libd/+bind/。
+# 产物在 third/openssl：Release 用 lib/+bin/，Debug 用 libd/+bind/。
 # 手动多 config（绕过 find_package 单 config 限制，按 $<CONFIG> 选 lib/dll）；FORCE 覆盖旧 cache。
-set(OPENSSL_ROOT_DIR "${CMAKE_SOURCE_DIR}/third/openssl/x64-windows" CACHE PATH "OpenSSL 安装根（见 third/openssl-README.md）" FORCE)
+set(OPENSSL_ROOT_DIR "${CMAKE_SOURCE_DIR}/third/openssl" CACHE PATH "OpenSSL 安装根（见 third/openssl-README.md）" FORCE)
 target_include_directories(qharness_core PRIVATE ${OPENSSL_ROOT_DIR}/include)
 target_link_libraries(qharness_core PRIVATE
     $<IF:$<CONFIG:Debug>,${OPENSSL_ROOT_DIR}/libd/libssl.lib,${OPENSSL_ROOT_DIR}/lib/libssl.lib>
