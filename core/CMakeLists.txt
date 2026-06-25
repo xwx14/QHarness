@@ -66,6 +66,8 @@ add_executable(qharness_core_tests
     tests/test_MockBashTool.cpp
     tests/test_EngineReActLoop.cpp
     tests/test_Engine2StageReAct.cpp
+    tests/MockHttpServer.h
+    tests/test_ProviderHttp.cpp
     tests/skeleton_compile_check.cpp
 )
 target_link_libraries(qharness_core_tests PRIVATE qharness_core)
