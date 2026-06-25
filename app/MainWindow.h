@@ -4,17 +4,17 @@
 #include "LogDock.h"
 #include "ChatDock.h"
 #include "QPostMessage.h"
+#include "EngineThread.h"   // test() 的 EngineThread::EngineKind 参数
 
 namespace qh {
 namespace app {
-
-class EngineThread;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget* parent = nullptr);
-    void test();
+    // 触发 mock 引擎 ReAct 循环：kind 选择单阶段(ReAct)或两阶段(TwoStageReAct)
+    void test(EngineThread::EngineKind kind = EngineThread::EngineKind::ReAct);
 private slots:
     void onChatSend();
 

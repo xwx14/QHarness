@@ -33,26 +33,31 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     auto* sendShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return), this);
     connect(sendShortcut, &QShortcut::activated, this, &MainWindow::onChatSend);
 
-    // 「测试」按钮：触发 test() 跑 mock ReAct 循环（参考 Go cmd/claw/main.go）
+    // 「测试」按钮：触发 mock 引擎 ReAct 循环（参考 Go cmd/claw/main.go）
     auto* toolbar = addToolBar(QStringLiteral("main"));
     auto* testBtn = new QPushButton(QStringLiteral("测试 ReAct"), this);
     toolbar->addWidget(testBtn);
-    connect(testBtn, &QPushButton::clicked, this, &MainWindow::test);
+    connect(testBtn, &QPushButton::clicked, this,
+            [this] { test(EngineThread::EngineKind::ReAct); });
+    auto* test2StageBtn = new QPushButton(QStringLiteral("测试两阶段ReAct"), this);
+    toolbar->addWidget(test2StageBtn);
+    connect(test2StageBtn, &QPushButton::clicked, this,
+            [this] { test(EngineThread::EngineKind::TwoStageReAct); });
 
     appendLog(QStringLiteral("[UI] 主窗口与日志/对话窗口已就绪。"));
 }
 
 
-void MainWindow::test()
+void MainWindow::test(EngineThread::EngineKind kind)
 {
     // 并发保护：上一轮仍在跑则忽略
     if (_engineThread && _engineThread->isRunning()) {
         return;
     }
-    // 异步驱动：每次 new 一套 mock+engine（封装在 EngineThread 内，turn 计数天然重置）
+    // 异步驱动：按 kind 在 EngineThread 内 new 对应 mock+engine（turn 计数天然重置）
     _engineThread = new EngineThread(_postMessage,
                                      "帮我检查当前目录的文件",
-                                     QDir::currentPath().toStdString(), this);
+                                     QDir::currentPath().toStdString(), kind, this);
     QThread* const expected = _engineThread;
     connect(_engineThread, &QThread::finished, this, [this, expected] {
         if (_engineThread == expected) { _engineThread = nullptr; }
