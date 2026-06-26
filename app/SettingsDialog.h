@@ -68,7 +68,8 @@ private:
     QTableWidget* _modelTable = nullptr;
     QButtonGroup* _modelRadioGroup = nullptr;   // 当前列 radio 单选
     // 其他 Tab
-    QCheckBox*    _thinkingCheck = nullptr;
+    QRadioButton* _reactRadio = nullptr;       // 引擎模式：普通 ReAct
+    QRadioButton* _twoStageRadio = nullptr;   // 引擎模式：两阶段 ReAct（慢思考）
     QListWidget*  _toolsList = nullptr;
     QLineEdit*    _workDirEdit = nullptr;
 };

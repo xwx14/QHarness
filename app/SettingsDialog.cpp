@@ -102,8 +102,12 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     // ===== Tab 2: 引擎 =====
     auto* eng = new QWidget;
     auto* engV = new QVBoxLayout(eng);
-    _thinkingCheck = new QCheckBox("开启慢思考（两阶段引擎：剥夺工具的纯文本规划 Phase1）");
-    engV->addWidget(_thinkingCheck);
+    engV->addWidget(new QLabel("引擎模式："));
+    _reactRadio    = new QRadioButton("普通 ReAct");
+    _twoStageRadio = new QRadioButton("两阶段 ReAct（慢思考）");
+    _reactRadio->setChecked(true);   // 默认普通 ReAct（与 _enableThinking 默认 false 一致；setSettings 会覆盖）
+    engV->addWidget(_reactRadio);
+    engV->addWidget(_twoStageRadio);
     engV->addStretch();
     _tabs->addTab(eng, "引擎");
 
@@ -144,7 +148,7 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
 void SettingsDialog::setSettings(const schema::Settings& s) {
     _settings = s;
     _loading = true;
-    _thinkingCheck->setChecked(s._enableThinking);
+    (s._enableThinking ? _twoStageRadio : _reactRadio)->setChecked(true);
     _workDirEdit->setText(QString::fromStdString(s._workDir));
     QListWidgetItem* bashItem = _toolsList->item(0);
     bool bashOn = std::find(s._enabledTools.begin(), s._enabledTools.end(), "bash")
@@ -162,7 +166,7 @@ void SettingsDialog::setSettings(const schema::Settings& s) {
 
 schema::Settings SettingsDialog::getSettings() const {
     schema::Settings s = _settings;
-    s._enableThinking = _thinkingCheck->isChecked();
+    s._enableThinking = _twoStageRadio->isChecked();
     s._workDir = _workDirEdit->text().trimmed().toStdString();
     s._enabledTools.clear();
     QListWidgetItem* bashItem = _toolsList->item(0);
