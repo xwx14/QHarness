@@ -5,15 +5,19 @@
 
 class QTabWidget;
 class QListWidget;
+class QTableWidget;
+class QTableWidgetItem;
 class QComboBox;
 class QLineEdit;
 class QCheckBox;
 class QPushButton;
+class QButtonGroup;
+class QRadioButton;
 
 namespace qh {
 namespace app {
 
-// 设置对话框：单 QTabWidget 四个 Tab（LLM 多 profile / 引擎 / 工具 / 工作目录）。
+// 设置对话框：LLM(供应商列表+模型表格) / 引擎 / 工具 / 工作目录。
 // 在 _settings 副本上编辑；确定时由 MainWindow 经 getSettings() 取回并持久化。
 class SettingsDialog : public QDialog {
     Q_OBJECT
@@ -24,34 +28,48 @@ public:
     schema::Settings getSettings() const;
 
 private slots:
-    void onAddProfile();
-    void onDelProfile();
-    void onProfileSelected();     // 列表选中切换 → 表单回显
-    void onEditChanged();         // 表单任意字段改动 → 写回当前 profile
-    void onSetActive();           // 把当前选中 profile 设为激活
+    // 供应商
+    void onAddProvider();
+    void onDelProvider();
+    void onProviderSelected();        // 左侧单击 → 设为当前供应商 + 右侧回显
+    void onProviderFieldChanged();    // 供应商表单(名称/类型/url/key)改动 → 回写
+    // 模型
+    void onAddModel();
+    void onDelModel();
+    void onModelCellChanged(int row, int col);   // 模型名/temp/maxTokens 编辑 → 回写
+    void onModelCurrentToggled(int row, bool checked);  // 当前列 radio → 写 activeModelName
+    // 其他
     void onPickWorkDir();
 
 private:
-    void rebuildProfileList(int selectRow);
-    void loadProfileToForm(int idx);
-    int  currentRow() const;
-    bool isNameDuplicate(const std::string& name, int exceptIdx) const;
+    void rebuildProviderList(int selectRow);
+    void loadProviderToForm(int idx);
+    void rebuildModelTable();
+    int  currentProviderRow() const;
+    int  currentModelRow() const;
+    bool isProviderNameDuplicate(const std::string& name, int exceptIdx) const;
+    bool isModelNameDuplicate(const std::string& name, int exceptIdx) const;
+    schema::LlmProvider* currentProvider();
+    void clearModelTableSignals(bool block);   // 重建表格时屏蔽 cellChanged
 
     schema::Settings _settings;
-    bool _loading = false;        // 回显时屏蔽 onEditChanged，避免回写循环
+    int _currentProviderIdx = -1;
+    bool _loading = false;
 
-    QTabWidget*  _tabs = nullptr;
-    QListWidget* _profileList = nullptr;
-    QLineEdit*   _nameEdit = nullptr;
-    QComboBox*   _typeCombo = nullptr;
-    QLineEdit*   _baseUrlEdit = nullptr;
-    QLineEdit*   _apiKeyEdit = nullptr;
-    QLineEdit*   _modelEdit = nullptr;
-    QLineEdit*   _tempEdit = nullptr;
-    QLineEdit*   _maxTokensEdit = nullptr;
-    QCheckBox*   _thinkingCheck = nullptr;
-    QListWidget* _toolsList = nullptr;
-    QLineEdit*   _workDirEdit = nullptr;
+    QTabWidget*   _tabs = nullptr;
+    // 供应商
+    QListWidget*  _providerList = nullptr;
+    QLineEdit*    _providerNameEdit = nullptr;
+    QComboBox*    _typeCombo = nullptr;
+    QLineEdit*    _baseUrlEdit = nullptr;
+    QLineEdit*    _apiKeyEdit = nullptr;
+    // 模型表格
+    QTableWidget* _modelTable = nullptr;
+    QButtonGroup* _modelRadioGroup = nullptr;   // 当前列 radio 单选
+    // 其他 Tab
+    QCheckBox*    _thinkingCheck = nullptr;
+    QListWidget*  _toolsList = nullptr;
+    QLineEdit*    _workDirEdit = nullptr;
 };
 
 } // namespace app

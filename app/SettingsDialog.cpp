@@ -1,10 +1,15 @@
 #include "SettingsDialog.h"
 #include <QTabWidget>
 #include <QListWidget>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QHeaderView>
 #include <QComboBox>
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QPushButton>
+#include <QRadioButton>
+#include <QButtonGroup>
 #include <QFormLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -12,13 +17,15 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QString>
+#include <QStringList>
+#include <algorithm>
 
 namespace qh {
 namespace app {
 
 SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     setWindowTitle("设置");
-    resize(620, 460);
+    resize(720, 520);
 
     _tabs = new QTabWidget(this);
     QVBoxLayout* root = new QVBoxLayout(this);
@@ -27,54 +34,70 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     // ===== Tab 1: LLM 配置 =====
     auto* llm = new QWidget;
     auto* llmH = new QHBoxLayout(llm);
-    _profileList = new QListWidget;
+
+    // 左：供应商列表
+    auto* left = new QWidget;
+    auto* leftV = new QVBoxLayout(left);
+    leftV->addWidget(new QLabel("供应商："));
+    _providerList = new QListWidget;
+    leftV->addWidget(_providerList);
+    auto* addProvBtn = new QPushButton("新增供应商");
+    auto* delProvBtn = new QPushButton("删除供应商");
+    auto* provBtnRow = new QHBoxLayout;
+    provBtnRow->addWidget(addProvBtn);
+    provBtnRow->addWidget(delProvBtn);
+    leftV->addLayout(provBtnRow);
+    leftV->addWidget(new QLabel("(单击列表项即设为当前供应商)"));
+    llmH->addWidget(left);
+
+    // 右：供应商设置 + 模型表格
     auto* right = new QWidget;
-    auto* form = new QFormLayout(right);
-    _nameEdit       = new QLineEdit;
-    _typeCombo      = new QComboBox;
+    auto* rightV = new QVBoxLayout(right);
+    auto* form = new QFormLayout;
+    _providerNameEdit = new QLineEdit;
+    _typeCombo = new QComboBox;
     _typeCombo->addItem("OpenAI", (int)schema::ProviderType::OpenAI);
     _typeCombo->addItem("Claude", (int)schema::ProviderType::Claude);
-    _baseUrlEdit    = new QLineEdit;
-    _apiKeyEdit     = new QLineEdit;
+    _baseUrlEdit = new QLineEdit;
+    _apiKeyEdit  = new QLineEdit;
     _apiKeyEdit->setEchoMode(QLineEdit::Password);
-    _modelEdit      = new QLineEdit;
-    _tempEdit       = new QLineEdit;   // 空 = 不下发
-    _maxTokensEdit  = new QLineEdit;
-    form->addRow("名称", _nameEdit);
+    form->addRow("名称", _providerNameEdit);
     form->addRow("类型", _typeCombo);
     form->addRow("Base URL", _baseUrlEdit);
     form->addRow("API Key", _apiKeyEdit);
-    form->addRow("Model", _modelEdit);
-    form->addRow("Temperature", _tempEdit);
-    form->addRow("Max Tokens", _maxTokensEdit);
-    auto* btnRow = new QHBoxLayout;
-    auto* addBtn = new QPushButton("新增");
-    auto* delBtn = new QPushButton("删除");
-    auto* setActiveBtn = new QPushButton("设为当前");
-    btnRow->addWidget(addBtn);
-    btnRow->addWidget(delBtn);
-    btnRow->addStretch();
-    btnRow->addWidget(setActiveBtn);
-    auto* rightV = new QVBoxLayout;
     rightV->addLayout(form);
-    rightV->addLayout(btnRow);
+
+    rightV->addWidget(new QLabel("模型（该供应商下）："));
+    _modelTable = new QTableWidget;
+    _modelTable->setColumnCount(4);
+    _modelTable->setHorizontalHeaderLabels(QStringList() << "模型名" << "temperature" << "maxTokens" << "当前");
+    _modelTable->horizontalHeader()->setStretchLastSection(true);
+    _modelRadioGroup = new QButtonGroup(this);
+    _modelRadioGroup->setExclusive(true);
+    rightV->addWidget(_modelTable);
+    auto* modelBtnRow = new QHBoxLayout;
+    auto* addModelBtn = new QPushButton("添加模型");
+    auto* delModelBtn = new QPushButton("删除模型");
+    modelBtnRow->addWidget(addModelBtn);
+    modelBtnRow->addWidget(delModelBtn);
+    modelBtnRow->addStretch();
+    rightV->addLayout(modelBtnRow);
     rightV->addStretch();
-    right->setLayout(rightV);
-    llmH->addWidget(_profileList);
     llmH->addWidget(right, 1);
     _tabs->addTab(llm, "LLM 配置");
 
-    connect(addBtn, &QPushButton::clicked, this, &SettingsDialog::onAddProfile);
-    connect(delBtn, &QPushButton::clicked, this, &SettingsDialog::onDelProfile);
-    connect(setActiveBtn, &QPushButton::clicked, this, &SettingsDialog::onSetActive);
-    connect(_profileList, &QListWidget::currentRowChanged, this,
-            [this](int){ onProfileSelected(); });
-    // 表单任意改动 → 回写当前 profile
-    for (auto* le : {_nameEdit, _baseUrlEdit, _apiKeyEdit, _modelEdit, _tempEdit, _maxTokensEdit}) {
-        connect(le, &QLineEdit::textChanged, this, &SettingsDialog::onEditChanged);
+    connect(addProvBtn, &QPushButton::clicked, this, &SettingsDialog::onAddProvider);
+    connect(delProvBtn, &QPushButton::clicked, this, &SettingsDialog::onDelProvider);
+    connect(_providerList, &QListWidget::currentRowChanged, this,
+            [this](int){ onProviderSelected(); });
+    for (auto* le : {_providerNameEdit, _baseUrlEdit, _apiKeyEdit}) {
+        connect(le, &QLineEdit::textChanged, this, &SettingsDialog::onProviderFieldChanged);
     }
     connect(_typeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, [this](int){ onEditChanged(); });
+            this, [this](int){ onProviderFieldChanged(); });
+    connect(addModelBtn, &QPushButton::clicked, this, &SettingsDialog::onAddModel);
+    connect(delModelBtn, &QPushButton::clicked, this, &SettingsDialog::onDelModel);
+    connect(_modelTable, &QTableWidget::cellChanged, this, &SettingsDialog::onModelCellChanged);
 
     // ===== Tab 2: 引擎 =====
     auto* eng = new QWidget;
@@ -88,7 +111,7 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     auto* tools = new QWidget;
     auto* toolsV = new QVBoxLayout(tools);
     _toolsList = new QListWidget;
-    _toolsList->addItem("bash");   // 本阶段唯一可用工具
+    _toolsList->addItem("bash");
     QListWidgetItem* it = _toolsList->item(0);
     it->setFlags(it->flags() | Qt::ItemIsUserCheckable);
     it->setCheckState(Qt::Unchecked);
@@ -123,12 +146,17 @@ void SettingsDialog::setSettings(const schema::Settings& s) {
     _loading = true;
     _thinkingCheck->setChecked(s._enableThinking);
     _workDirEdit->setText(QString::fromStdString(s._workDir));
-    // 工具勾选
     QListWidgetItem* bashItem = _toolsList->item(0);
     bool bashOn = std::find(s._enabledTools.begin(), s._enabledTools.end(), "bash")
                   != s._enabledTools.end();
     bashItem->setCheckState(bashOn ? Qt::Checked : Qt::Unchecked);
-    rebuildProfileList(s._profiles.empty() ? -1 : 0);
+    // 选中激活供应商（单击语义：激活=当前选中）
+    int row = -1;
+    for (int i = 0; i < (int)_settings._providers.size(); ++i) {
+        if (_settings._providers[i]._name == _settings._activeProviderName) { row = i; break; }
+    }
+    if (row < 0 && !_settings._providers.empty()) row = 0;
+    rebuildProviderList(row);
     _loading = false;
 }
 
@@ -136,7 +164,6 @@ schema::Settings SettingsDialog::getSettings() const {
     schema::Settings s = _settings;
     s._enableThinking = _thinkingCheck->isChecked();
     s._workDir = _workDirEdit->text().trimmed().toStdString();
-    // 工具
     s._enabledTools.clear();
     QListWidgetItem* bashItem = _toolsList->item(0);
     if (bashItem && bashItem->checkState() == Qt::Checked) {
@@ -145,127 +172,252 @@ schema::Settings SettingsDialog::getSettings() const {
     return s;
 }
 
-void SettingsDialog::rebuildProfileList(int selectRow) {
-    _profileList->blockSignals(true);
-    _profileList->clear();
-    for (const auto& p : _settings._profiles) {
-        QString label = QString::fromStdString(p._name);
-        if (p._name == _settings._activeProfileName) label += "  ✓当前";
-        _profileList->addItem(label);
-    }
-    _profileList->blockSignals(false);
-    if (selectRow >= 0 && selectRow < _profileList->count()) {
-        _profileList->setCurrentRow(selectRow);
-        loadProfileToForm(selectRow);
-    } else {
-        loadProfileToForm(-1);
-    }
+int SettingsDialog::currentProviderRow() const { return _providerList->currentRow(); }
+
+schema::LlmProvider* SettingsDialog::currentProvider() {
+    int idx = _currentProviderIdx;
+    if (idx < 0 || idx >= (int)_settings._providers.size()) return nullptr;
+    return &_settings._providers[idx];
 }
 
-void SettingsDialog::loadProfileToForm(int idx) {
-    _loading = true;
-    if (idx < 0 || idx >= (int)_settings._profiles.size()) {
-        _nameEdit->clear(); _baseUrlEdit->clear(); _apiKeyEdit->clear();
-        _modelEdit->clear(); _tempEdit->clear(); _maxTokensEdit->clear();
-        _typeCombo->setCurrentIndex(0);
-        _loading = false;
-        return;
-    }
-    const auto& p = _settings._profiles[idx];
-    _nameEdit->setText(QString::fromStdString(p._name));
-    _typeCombo->setCurrentIndex(p._providerType == schema::ProviderType::Claude ? 1 : 0);
-    _baseUrlEdit->setText(QString::fromStdString(p._baseUrl));
-    _apiKeyEdit->setText(QString::fromStdString(p._apiKey));
-    _modelEdit->setText(QString::fromStdString(p._model));
-    _tempEdit->setText(p._temperature ? QString::number(*p._temperature) : "");
-    _maxTokensEdit->setText(p._maxTokens ? QString::number(*p._maxTokens) : "");
-    _loading = false;
-}
-
-int SettingsDialog::currentRow() const {
-    return _profileList->currentRow();
-}
-
-void SettingsDialog::onProfileSelected() {
-    if (_loading) return;
-    loadProfileToForm(currentRow());
-}
-
-void SettingsDialog::onEditChanged() {
-    if (_loading) return;
-    int idx = currentRow();
-    if (idx < 0 || idx >= (int)_settings._profiles.size()) return;
-    auto& p = _settings._profiles[idx];
-    std::string oldName = p._name;
-    std::string newName = _nameEdit->text().trimmed().toStdString();
-
-    // 重名校验：新名与除自身外的其他 profile 重名则拒绝
-    if (newName != oldName && isNameDuplicate(newName, idx)) {
-        QMessageBox::warning(this, QStringLiteral("重名"),
-                             QStringLiteral("已存在同名 profile，名称未更改"));
-        _loading = true;
-        _nameEdit->setText(QString::fromStdString(oldName));
-        _loading = false;
-        return;  // p._name 保持旧名不改
-    }
-
-    p._name = newName;
-    p._providerType = static_cast<schema::ProviderType>(_typeCombo->currentData().toInt());
-    p._baseUrl   = _baseUrlEdit->text().toStdString();
-    p._apiKey    = _apiKeyEdit->text().toStdString();
-    p._model     = _modelEdit->text().toStdString();
-    bool tok = false;
-    double t = _tempEdit->text().trimmed().toDouble(&tok);
-    p._temperature = tok ? std::optional<double>(t) : std::nullopt;
-    bool mok = false;
-    int m = _maxTokensEdit->text().trimmed().toInt(&mok);
-    p._maxTokens = mok ? std::optional<int>(m) : std::nullopt;
-    // 名称变化 → 刷新列表显示
-    if (oldName != p._name) {
-        rebuildProfileList(idx);
-    }
-}
-
-void SettingsDialog::onAddProfile() {
-    schema::LlmProfile p;
-    p._providerType = schema::ProviderType::OpenAI;
-    std::string baseName = "新配置 " + std::to_string(_settings._profiles.size() + 1);
-    std::string name = baseName;
-    int suffix = 2;
-    while (isNameDuplicate(name, -1)) {
-        name = baseName + " (" + std::to_string(suffix) + ")";
-        ++suffix;
-    }
-    p._name = name;
-    _settings._profiles.push_back(p);
-    rebuildProfileList((int)_settings._profiles.size() - 1);
-}
-
-bool SettingsDialog::isNameDuplicate(const std::string& name, int exceptIdx) const {
-    for (int i = 0; i < (int)_settings._profiles.size(); ++i) {
+bool SettingsDialog::isProviderNameDuplicate(const std::string& name, int exceptIdx) const {
+    for (int i = 0; i < (int)_settings._providers.size(); ++i) {
         if (i == exceptIdx) continue;
-        if (_settings._profiles[i]._name == name) return true;
+        if (_settings._providers[i]._name == name) return true;
     }
     return false;
 }
 
-void SettingsDialog::onDelProfile() {
-    int idx = currentRow();
-    if (idx < 0 || idx >= (int)_settings._profiles.size()) return;
-    std::string removed = _settings._profiles[idx]._name;
-    _settings._profiles.erase(_settings._profiles.begin() + idx);
-    if (_settings._activeProfileName == removed) {
-        _settings._activeProfileName.clear();   // 删除激活项 → 取消激活
+bool SettingsDialog::isModelNameDuplicate(const std::string& name, int exceptIdx) const {
+    auto* p = const_cast<SettingsDialog*>(this)->currentProvider();
+    if (!p) return false;
+    for (int i = 0; i < (int)p->_models.size(); ++i) {
+        if (i == exceptIdx) continue;
+        if (p->_models[i]._name == name) return true;
     }
-    rebuildProfileList(_settings._profiles.empty() ? -1
-                       : std::min(idx, (int)_settings._profiles.size() - 1));
+    return false;
 }
 
-void SettingsDialog::onSetActive() {
-    int idx = currentRow();
-    if (idx < 0 || idx >= (int)_settings._profiles.size()) return;
-    _settings._activeProfileName = _settings._profiles[idx]._name;
-    rebuildProfileList(idx);
+void SettingsDialog::rebuildProviderList(int selectRow) {
+    _providerList->blockSignals(true);
+    _providerList->clear();
+    for (const auto& p : _settings._providers) {
+        QString label = QString::fromStdString(p._name);
+        if (p._name == _settings._activeProviderName) label += "  ✓当前";
+        _providerList->addItem(label);
+    }
+    _providerList->blockSignals(false);
+    if (selectRow >= 0 && selectRow < _providerList->count()) {
+        _providerList->setCurrentRow(selectRow);   // 触发 onProviderSelected
+    } else {
+        _currentProviderIdx = -1;
+        loadProviderToForm(-1);
+    }
+}
+
+void SettingsDialog::loadProviderToForm(int idx) {
+    _loading = true;
+    _currentProviderIdx = idx;
+    if (idx < 0 || idx >= (int)_settings._providers.size()) {
+        _providerNameEdit->clear(); _baseUrlEdit->clear(); _apiKeyEdit->clear();
+        _typeCombo->setCurrentIndex(0);
+        rebuildModelTable();
+        _loading = false;
+        return;
+    }
+    const auto& p = _settings._providers[idx];
+    _providerNameEdit->setText(QString::fromStdString(p._name));
+    _typeCombo->setCurrentIndex(p._providerType == schema::ProviderType::Claude ? 1 : 0);
+    _baseUrlEdit->setText(QString::fromStdString(p._baseUrl));
+    _apiKeyEdit->setText(QString::fromStdString(p._apiKey));
+    rebuildModelTable();
+    _loading = false;
+}
+
+void SettingsDialog::clearModelTableSignals(bool block) {
+    _modelTable->blockSignals(block);
+}
+
+void SettingsDialog::rebuildModelTable() {
+    clearModelTableSignals(true);
+    // 清旧 radio
+    for (auto* b : _modelRadioGroup->buttons()) {
+        _modelRadioGroup->removeButton(b);
+        delete b;
+    }
+    auto* p = currentProvider();
+    int rows = p ? (int)p->_models.size() : 0;
+    _modelTable->setRowCount(rows);
+    for (int r = 0; r < rows; ++r) {
+        const auto& m = p->_models[r];
+        auto* nameItem = new QTableWidgetItem(QString::fromStdString(m._name));
+        auto* tempItem = new QTableWidgetItem(m._temperature ? QString::number(*m._temperature) : "");
+        auto* maxItem  = new QTableWidgetItem(m._maxTokens ? QString::number(*m._maxTokens) : "");
+        _modelTable->setItem(r, 0, nameItem);
+        _modelTable->setItem(r, 1, tempItem);
+        _modelTable->setItem(r, 2, maxItem);
+        auto* radio = new QRadioButton;
+        radio->setAutoExclusive(false);   // 由 QButtonGroup 管
+        _modelTable->setCellWidget(r, 3, radio);
+        _modelRadioGroup->addButton(radio, r);
+        // 当前模型 radio 勾选
+        if (p->_name == _settings._activeProviderName && m._name == _settings._activeModelName) {
+            radio->setChecked(true);
+        }
+        connect(radio, &QRadioButton::toggled, this, [this, r](bool on){ onModelCurrentToggled(r, on); });
+    }
+    clearModelTableSignals(false);
+}
+
+void SettingsDialog::onProviderSelected() {
+    if (_loading) return;
+    int row = currentProviderRow();
+    if (row < 0 || row >= (int)_settings._providers.size()) return;
+    // 单击即设为当前供应商
+    _settings._activeProviderName = _settings._providers[row]._name;
+    loadProviderToForm(row);
+    // 列表 ✓ 标记刷新
+    _loading = true;
+    _providerList->blockSignals(true);
+    _providerList->clear();
+    for (const auto& p : _settings._providers) {
+        QString label = QString::fromStdString(p._name);
+        if (p._name == _settings._activeProviderName) label += "  ✓当前";
+        _providerList->addItem(label);
+    }
+    _providerList->blockSignals(false);
+    _providerList->setCurrentRow(row);
+    _loading = false;
+    // 切供应商后当前模型可能不在新供应商下 → 清空
+    if (!schema::findModel(_settings._providers[row], _settings._activeModelName)) {
+        _settings._activeModelName.clear();
+        clearModelTableSignals(true);
+        for (auto* b : _modelRadioGroup->buttons()) b->setChecked(false);
+        clearModelTableSignals(false);
+    }
+}
+
+void SettingsDialog::onProviderFieldChanged() {
+    if (_loading) return;
+    auto* p = currentProvider();
+    if (!p) return;
+    std::string oldName = p->_name;
+    std::string newName = _providerNameEdit->text().trimmed().toStdString();
+    // 供应商重名拒绝
+    if (newName != oldName && isProviderNameDuplicate(newName, _currentProviderIdx)) {
+        QMessageBox::warning(this, QStringLiteral("重名"),
+                             QStringLiteral("已存在同名供应商，名称未更改"));
+        _loading = true;
+        _providerNameEdit->setText(QString::fromStdString(oldName));
+        _loading = false;
+        return;
+    }
+    // 改名时同步激活引用（当前激活供应商改名 → activeProviderName 跟随）
+    if (newName != oldName && oldName == _settings._activeProviderName) {
+        _settings._activeProviderName = newName;
+    }
+    p->_name = newName;
+    p->_providerType = static_cast<schema::ProviderType>(_typeCombo->currentData().toInt());
+    p->_baseUrl = _baseUrlEdit->text().toStdString();
+    p->_apiKey  = _apiKeyEdit->text().toStdString();
+    // 名称变化 → 刷新列表标签
+    if (oldName != p->_name) {
+        _loading = true;
+        _providerList->blockSignals(true);
+        _providerList->clear();
+        for (const auto& pp : _settings._providers) {
+            QString label = QString::fromStdString(pp._name);
+            if (pp._name == _settings._activeProviderName) label += "  ✓当前";
+            _providerList->addItem(label);
+        }
+        _providerList->blockSignals(false);
+        _providerList->setCurrentRow(_currentProviderIdx);
+        _loading = false;
+    }
+}
+
+void SettingsDialog::onAddProvider() {
+    schema::LlmProvider p;
+    p._providerType = schema::ProviderType::OpenAI;
+    std::string base = "新供应商 " + std::to_string(_settings._providers.size() + 1);
+    std::string name = base;
+    int suffix = 2;
+    while (isProviderNameDuplicate(name, -1)) {
+        name = base + " (" + std::to_string(suffix) + ")";
+        ++suffix;
+    }
+    p._name = name;
+    _settings._providers.push_back(p);
+    rebuildProviderList((int)_settings._providers.size() - 1);
+}
+
+void SettingsDialog::onDelProvider() {
+    int idx = _currentProviderIdx;
+    if (idx < 0 || idx >= (int)_settings._providers.size()) return;
+    std::string removed = _settings._providers[idx]._name;
+    _settings._providers.erase(_settings._providers.begin() + idx);
+    if (_settings._activeProviderName == removed) _settings._activeProviderName.clear();
+    rebuildProviderList(_settings._providers.empty() ? -1
+                       : std::min(idx, (int)_settings._providers.size() - 1));
+}
+
+void SettingsDialog::onModelCellChanged(int row, int col) {
+    if (_loading) return;
+    auto* p = currentProvider();
+    if (!p || row < 0 || row >= (int)p->_models.size()) return;
+    (void)col;
+    std::string oldName = p->_models[row]._name;
+    std::string newName = _modelTable->item(row, 0) ? _modelTable->item(row, 0)->text().trimmed().toStdString() : "";
+    // 模型重名（同供应商内）拒绝
+    if (newName != oldName && !newName.empty() && isModelNameDuplicate(newName, row)) {
+        QMessageBox::warning(this, QStringLiteral("重名"),
+                             QStringLiteral("该供应商下已存在同名模型，名称未更改"));
+        _loading = true;
+        _modelTable->item(row, 0)->setText(QString::fromStdString(oldName));
+        _loading = false;
+        return;
+    }
+    p->_models[row]._name = newName;
+    bool tok = false;
+    double t = _modelTable->item(row, 1)->text().trimmed().toDouble(&tok);
+    p->_models[row]._temperature = tok ? std::optional<double>(t) : std::nullopt;
+    bool mok = false;
+    int mn = _modelTable->item(row, 2)->text().trimmed().toInt(&mok);
+    p->_models[row]._maxTokens = mok ? std::optional<int>(mn) : std::nullopt;
+}
+
+void SettingsDialog::onModelCurrentToggled(int row, bool checked) {
+    if (_loading || !checked) return;
+    auto* p = currentProvider();
+    if (!p || row < 0 || row >= (int)p->_models.size()) return;
+    _settings._activeModelName = p->_models[row]._name;
+}
+
+void SettingsDialog::onAddModel() {
+    auto* p = currentProvider();
+    if (!p) return;
+    schema::LlmModel m;
+    std::string base = "新模型 " + std::to_string(p->_models.size() + 1);
+    std::string name = base;
+    int suffix = 2;
+    // 临时设 _currentProviderIdx 用于 isModelNameDuplicate（currentProvider 已是 p）
+    while (isModelNameDuplicate(name, -1)) {
+        name = base + " (" + std::to_string(suffix) + ")";
+        ++suffix;
+    }
+    m._name = name;
+    p->_models.push_back(m);
+    rebuildModelTable();
+}
+
+void SettingsDialog::onDelModel() {
+    auto* p = currentProvider();
+    int row = _modelTable->currentRow();
+    if (!p || row < 0 || row >= (int)p->_models.size()) return;
+    std::string removed = p->_models[row]._name;
+    p->_models.erase(p->_models.begin() + row);
+    if (_settings._activeModelName == removed) _settings._activeModelName.clear();
+    rebuildModelTable();
 }
 
 void SettingsDialog::onPickWorkDir() {
