@@ -61,7 +61,7 @@ build/out/Release/qharness_app.exe
 
 ### Settings（`core/schema/Settings.h` + `Settings.cpp`、`core/config/SettingsStore.h` + `SettingsStore.cpp`）
 
-应用配置：`ProviderType`(OpenAI/Claude) enum、`LlmProfile`(name/providerType/baseUrl/apiKey/model/temperature/maxTokens)、`Settings`(多 profiles + activeProfileName + enableThinking + workDir + enabledTools)，ADL to_json/from_json（空值 omitempty），`findActiveProfile`。`SettingsStore`（core/config，纯 C++，路径由 app 注入）负责 load/save 到 `<exeDir>/config/setting.json`：文件缺失→默认、JSON 损坏→默认+lastError。app 层 `MainWindow` 持 `_settings`，`SettingsDialog`(单 QTabWidget) 编辑，`EngineThread` 构造收 `Settings` 值拷贝按配置装配 Provider/Engine/工具（值注入，worker 线程只读自己拷贝，与 UI 零共享）。
+应用配置（两级 LLM 结构）：`ProviderType`(OpenAI/Claude) enum、`LlmModel`(name/temperature/maxTokens)、`LlmProvider`(name/providerType/baseUrl/apiKey + 多个 LlmModel)、`Settings`(多 providers + activeProviderName + activeModelName + enableThinking + workDir + enabledTools)。ADL to_json/from_json（空值 omitempty，`from_json` 用 `value()` 缺字段容错）。`findActiveProvider`/`findModel` helper。`SettingsStore`（core/config，纯 C++，路径由 app 注入）load/save 到 `<exeDir>/config/setting.json`：文件缺失→默认、JSON 损坏→默认+lastError。app 层 `MainWindow` 持 `_settings`，`SettingsDialog`(单 QTabWidget) 编辑——LLM Tab 左侧供应商列表（单击设当前）+ 右侧供应商表单 + 模型 QTableWidget（模型名/temp/maxTokens 可编辑 + 当前列 radio 单选写 activeModelName）。`EngineThread` 构造收 `Settings` 值拷贝，按 `findActiveProvider`+`findModel` 定位创建 ProviderOpenAI/Claude（未配回退 mock）。值注入——worker 线程只读自己拷贝，与 UI 零共享。
 
 ### 命名空间
 
