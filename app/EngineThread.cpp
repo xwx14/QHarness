@@ -20,26 +20,29 @@ EngineThread::EngineThread(QPostMessage* postMessage, std::string prompt,
     : QThread(parent), _postMessage(postMessage),
       _prompt(std::move(prompt)), _settings(std::move(settings)) {
 
-    // 1) Provider：按激活 profile 创建 OpenAI/Claude；未配/缺字段 → 回退 mock
-    const schema::LlmProfile* prof = schema::findActiveProfile(_settings);
-    const bool valid = prof && !prof->_baseUrl.empty()
-                       && !prof->_apiKey.empty() && !prof->_model.empty();
+    // 1) Provider：按激活供应商 + 激活模型创建 OpenAI/Claude；未配/缺字段 → 回退 mock
+    const schema::LlmProvider* provider = schema::findActiveProvider(_settings);
+    const schema::LlmModel* model = provider
+        ? schema::findModel(*provider, _settings._activeModelName) : nullptr;
+    const bool valid = provider && model
+                       && !provider->_baseUrl.empty() && !provider->_apiKey.empty()
+                       && !model->_name.empty();
     if (valid) {
-        if (prof->_providerType == schema::ProviderType::Claude) {
+        if (provider->_providerType == schema::ProviderType::Claude) {
             auto p = std::make_unique<provider::ProviderClaude>(
-                prof->_apiKey, prof->_baseUrl, prof->_model);
-            if (prof->_temperature) p->setTemperature(*prof->_temperature);
-            if (prof->_maxTokens)   p->setMaxTokens(*prof->_maxTokens);
+                provider->_apiKey, provider->_baseUrl, model->_name);
+            if (model->_temperature) p->setTemperature(*model->_temperature);
+            if (model->_maxTokens)   p->setMaxTokens(*model->_maxTokens);
             _provider = std::move(p);
         } else {
             auto p = std::make_unique<provider::ProviderOpenAI>(
-                prof->_apiKey, prof->_baseUrl, prof->_model);
-            if (prof->_temperature) p->setTemperature(*prof->_temperature);
-            if (prof->_maxTokens)   p->setMaxTokens(*prof->_maxTokens);
+                provider->_apiKey, provider->_baseUrl, model->_name);
+            if (model->_temperature) p->setTemperature(*model->_temperature);
+            if (model->_maxTokens)   p->setMaxTokens(*model->_maxTokens);
             _provider = std::move(p);
         }
     } else {
-        _postMessage->post(schema::Level::Warn, "未配置有效 profile，回退 mock provider");
+        _postMessage->post(schema::Level::Warn, "未配置有效供应商/模型，回退 mock provider");
         if (kind == EngineKind::TwoStageReAct) {
             _provider = std::make_unique<provider::MockTwoStageProvider>();
         } else {
