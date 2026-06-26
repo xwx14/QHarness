@@ -21,36 +21,48 @@ NLOHMANN_JSON_SERIALIZE_ENUM(ProviderType, {
     {ProviderType::Claude, "Claude"},
 })
 
-// 单套 LLM 连接配置（一个 profile = 一组 baseUrl/apiKey/model 等）
-class QH_API LlmProfile {
+// 单个模型（隶属于某供应商）：模型名 + 该模型自己的采样参数
+class QH_API LlmModel {
 public:
-    std::string  _name;                                   // profile 唯一标识（用户命名）
-    ProviderType _providerType = ProviderType::OpenAI;
-    std::string  _baseUrl;
-    std::string  _apiKey;
-    std::string  _model;
-    std::optional<double> _temperature;                   // nullopt = 不下发，用 provider 默认
-    std::optional<int>    _maxTokens;
+    std::string             _name;          // 模型名，如 "glm-4"
+    std::optional<double>   _temperature;   // nullopt = 不下发，用 provider 默认
+    std::optional<int>      _maxTokens;
 };
 
-QH_API void to_json(nlohmann::json& j, const LlmProfile& p);
-QH_API void from_json(const nlohmann::json& j, LlmProfile& p);
+QH_API void to_json(nlohmann::json& j, const LlmModel& m);
+QH_API void from_json(const nlohmann::json& j, LlmModel& m);
 
-// 应用全局设置（多 profile + 引擎开关 + 工作目录 + 启用工具）
+// 供应商：一组 baseUrl + apiKey + providerType，下挂多个模型
+class QH_API LlmProvider {
+public:
+    std::string             _name;                              // 供应商名，唯一标识
+    ProviderType            _providerType = ProviderType::OpenAI;
+    std::string             _baseUrl;
+    std::string             _apiKey;
+    std::vector<LlmModel>   _models;                            // 该供应商下多个模型
+};
+
+QH_API void to_json(nlohmann::json& j, const LlmProvider& p);
+QH_API void from_json(const nlohmann::json& j, LlmProvider& p);
+
+// 应用全局设置（多供应商 + 双激活 + 引擎开关 + 工作目录 + 启用工具）
 class QH_API Settings {
 public:
-    std::vector<LlmProfile>  _profiles;
-    std::string              _activeProfileName;           // 按 _name 引用激活项；空 = 未激活
-    bool                     _enableThinking = false;      // 两阶段引擎的慢思考 Phase1 开关
-    std::string              _workDir;                     // 空 = 运行时回退 currentPath
-    std::vector<std::string> _enabledTools;                // 启用的工具名子集（如 "bash"）
+    std::vector<LlmProvider> _providers;
+    std::string              _activeProviderName;   // 当前供应商；空 = 未激活
+    std::string              _activeModelName;      // 当前模型（在 _activeProviderName 下查找）；空 = 未激活
+    bool                     _enableThinking = false;
+    std::string              _workDir;              // 空 = 运行时回退 currentPath
+    std::vector<std::string> _enabledTools;
 };
 
 QH_API void to_json(nlohmann::json& j, const Settings& s);
 QH_API void from_json(const nlohmann::json& j, Settings& s);
 
-// 按 activeProfileName 查找激活 profile；未设置或未命中返回 nullptr
-QH_API const LlmProfile* findActiveProfile(const Settings& s);
+// 按 _activeProviderName 查找供应商；未设置/未命中返回 nullptr
+QH_API const LlmProvider* findActiveProvider(const Settings& s);
+// 在 provider._models 中按 name 查找模型；空名/未命中返回 nullptr
+QH_API const LlmModel* findModel(const LlmProvider& provider, const std::string& modelName);
 
 } // namespace schema
 } // namespace qh

@@ -16,49 +16,66 @@ ProviderType providerTypeFromString(const std::string& s) {
     return ProviderType::OpenAI;
 }
 
-void to_json(nlohmann::json& j, const LlmProfile& p) {
+void to_json(nlohmann::json& j, const LlmModel& m) {
+    j = nlohmann::json{{"name", m._name}};
+    if (m._temperature.has_value()) j["temperature"] = *m._temperature;
+    if (m._maxTokens.has_value())   j["maxTokens"]   = *m._maxTokens;
+}
+
+void from_json(const nlohmann::json& j, LlmModel& m) {
+    m._name = j.value("name", "");
+    if (j.contains("temperature")) m._temperature = j["temperature"].get<double>();
+    if (j.contains("maxTokens"))   m._maxTokens   = j["maxTokens"].get<int>();
+}
+
+void to_json(nlohmann::json& j, const LlmProvider& p) {
     j = nlohmann::json{
         {"name", p._name},
         {"providerType", p._providerType},
         {"baseUrl", p._baseUrl},
         {"apiKey", p._apiKey},
-        {"model", p._model}};
-    if (p._temperature.has_value()) j["temperature"] = *p._temperature;
-    if (p._maxTokens.has_value())   j["maxTokens"]   = *p._maxTokens;
+        {"models", p._models}};   // vector<LlmModel> 自动序列化
 }
 
-void from_json(const nlohmann::json& j, LlmProfile& p) {
-    // 缺字段用默认值（容错：用户手改 setting.json 漏某字段不致整个 profile 丢失）
+void from_json(const nlohmann::json& j, LlmProvider& p) {
     p._name         = j.value("name", "");
     p._providerType = j.value("providerType", ProviderType::OpenAI);
     p._baseUrl      = j.value("baseUrl", "");
     p._apiKey       = j.value("apiKey", "");
-    p._model        = j.value("model", "");
-    if (j.contains("temperature")) p._temperature = j["temperature"].get<double>();
-    if (j.contains("maxTokens"))   p._maxTokens   = j["maxTokens"].get<int>();
+    if (j.contains("models")) j.at("models").get_to(p._models);
 }
 
 void to_json(nlohmann::json& j, const Settings& s) {
     j = nlohmann::json::object();
-    if (!s._profiles.empty())          j["profiles"] = s._profiles;            // vector<LlmProfile> 自动序列化
-    if (!s._activeProfileName.empty()) j["activeProfileName"] = s._activeProfileName;
-    if (s._enableThinking)             j["enableThinking"] = s._enableThinking;
-    if (!s._workDir.empty())           j["workDir"] = s._workDir;
-    if (!s._enabledTools.empty())      j["enabledTools"] = s._enabledTools;
+    if (!s._providers.empty())          j["providers"] = s._providers;
+    if (!s._activeProviderName.empty()) j["activeProviderName"] = s._activeProviderName;
+    if (!s._activeModelName.empty())    j["activeModelName"] = s._activeModelName;
+    if (s._enableThinking)              j["enableThinking"] = s._enableThinking;
+    if (!s._workDir.empty())            j["workDir"] = s._workDir;
+    if (!s._enabledTools.empty())       j["enabledTools"] = s._enabledTools;
 }
 
 void from_json(const nlohmann::json& j, Settings& s) {
-    if (j.contains("profiles"))          j.at("profiles").get_to(s._profiles);
-    if (j.contains("activeProfileName")) j.at("activeProfileName").get_to(s._activeProfileName);
-    if (j.contains("enableThinking"))    j.at("enableThinking").get_to(s._enableThinking);
-    if (j.contains("workDir"))           j.at("workDir").get_to(s._workDir);
-    if (j.contains("enabledTools"))      j.at("enabledTools").get_to(s._enabledTools);
+    if (j.contains("providers"))          j.at("providers").get_to(s._providers);
+    if (j.contains("activeProviderName")) j.at("activeProviderName").get_to(s._activeProviderName);
+    if (j.contains("activeModelName"))    j.at("activeModelName").get_to(s._activeModelName);
+    if (j.contains("enableThinking"))     j.at("enableThinking").get_to(s._enableThinking);
+    if (j.contains("workDir"))            j.at("workDir").get_to(s._workDir);
+    if (j.contains("enabledTools"))       j.at("enabledTools").get_to(s._enabledTools);
 }
 
-const LlmProfile* findActiveProfile(const Settings& s) {
-    if (s._activeProfileName.empty()) return nullptr;
-    for (const auto& p : s._profiles) {
-        if (p._name == s._activeProfileName) return &p;
+const LlmProvider* findActiveProvider(const Settings& s) {
+    if (s._activeProviderName.empty()) return nullptr;
+    for (const auto& p : s._providers) {
+        if (p._name == s._activeProviderName) return &p;
+    }
+    return nullptr;
+}
+
+const LlmModel* findModel(const LlmProvider& provider, const std::string& modelName) {
+    if (modelName.empty()) return nullptr;
+    for (const auto& m : provider._models) {
+        if (m._name == modelName) return &m;
     }
     return nullptr;
 }
