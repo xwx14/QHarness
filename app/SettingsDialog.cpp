@@ -411,6 +411,7 @@ void SettingsDialog::onModelCurrentToggled(int row, bool checked) {
     auto* p = currentProvider();
     if (!p || row < 0 || row >= (int)p->_models.size()) return;
     _settings._activeModelName = p->_models[row]._name;
+    _settings._activeProviderName = p->_name;   // 选模型隐含选其供应商（双激活一致；否则未单击供应商直接选 radio 时 _activeProviderName 为空，再打开 radio 回显丢失）
 }
 
 void SettingsDialog::onAddModel() {
