@@ -28,11 +28,12 @@ void to_json(nlohmann::json& j, const LlmProfile& p) {
 }
 
 void from_json(const nlohmann::json& j, LlmProfile& p) {
-    j.at("name").get_to(p._name);
-    j.at("providerType").get_to(p._providerType);
-    j.at("baseUrl").get_to(p._baseUrl);
-    j.at("apiKey").get_to(p._apiKey);
-    j.at("model").get_to(p._model);
+    // 缺字段用默认值（容错：用户手改 setting.json 漏某字段不致整个 profile 丢失）
+    p._name         = j.value("name", "");
+    p._providerType = j.value("providerType", ProviderType::OpenAI);
+    p._baseUrl      = j.value("baseUrl", "");
+    p._apiKey       = j.value("apiKey", "");
+    p._model        = j.value("model", "");
     if (j.contains("temperature")) p._temperature = j["temperature"].get<double>();
     if (j.contains("maxTokens"))   p._maxTokens   = j["maxTokens"].get<int>();
 }

@@ -116,3 +116,31 @@ QH_TEST(store_load_corrupt_json) {
     QH_CHECK(!store.lastError().empty());       // 记错
     std::remove(path.c_str());
 }
+
+// ========== I1: from_json 缺字段容错（单字段笔误不应致全量回退）==========
+
+QH_TEST(settings_profile_partial_load_uses_defaults) {
+    // 缺 providerType/baseUrl/apiKey/model/temperature/maxTokens，仅 name
+    json j = {{"name", "partial"}};
+    auto p = j.get<qh::schema::LlmProfile>();
+    QH_CHECK_EQ(p._name, std::string("partial"));
+    QH_CHECK(p._providerType == qh::schema::ProviderType::OpenAI);   // 缺 → 默认 OpenAI
+    QH_CHECK_EQ(p._baseUrl, std::string(""));
+    QH_CHECK_EQ(p._apiKey, std::string(""));
+    QH_CHECK_EQ(p._model, std::string(""));
+    QH_CHECK(!p._temperature.has_value());
+    QH_CHECK(!p._maxTokens.has_value());
+}
+
+QH_TEST(store_load_partial_profile_kept_not_dropped) {
+    // setting.json 含一个缺 model 等字段的 profile → load 应保留它（用默认填充），而非全量回退
+    const std::string path = "test_setting_partial.json";
+    { std::ofstream out(path); out << R"({"profiles":[{"name":"partial","providerType":"OpenAI"}]})"; }
+    qh::config::SettingsStore store(path);
+    auto s = store.load();
+    QH_CHECK_EQ(s._profiles.size(), (size_t)1);           // profile 保留，不全量丢失
+    QH_CHECK_EQ(s._profiles[0]._name, std::string("partial"));
+    QH_CHECK_EQ(s._profiles[0]._model, std::string(""));  // 缺 → 默认空
+    QH_CHECK(store.lastError().empty());                   // 容错成功，不记错
+    std::remove(path.c_str());
+}
