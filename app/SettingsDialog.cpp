@@ -245,13 +245,15 @@ void SettingsDialog::clearModelTableSignals(bool block) {
 
 void SettingsDialog::rebuildModelTable() {
     clearModelTableSignals(true);
-    // 清旧 radio
+    // 清旧 radio：只从 group 移除，**不要 delete**——radio 是 QTableWidget 的 cellWidget，
+    // 所有权归 table；手动 delete 会让 table 内部悬挂指针，setRowCount 时崩溃（double free）。
+    // 由 setRowCount(0) 释放旧 cellWidget（此时 radio 已从 group 移除，group 安全）。
     for (auto* b : _modelRadioGroup->buttons()) {
         _modelRadioGroup->removeButton(b);
-        delete b;
     }
     auto* p = currentProvider();
     int rows = p ? (int)p->_models.size() : 0;
+    _modelTable->setRowCount(0);   // 清所有行 + 释放旧 cellWidget（radio）
     _modelTable->setRowCount(rows);
     for (int r = 0; r < rows; ++r) {
         const auto& m = p->_models[r];
