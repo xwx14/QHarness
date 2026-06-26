@@ -180,6 +180,12 @@ schema::LlmProvider* SettingsDialog::currentProvider() {
     return &_settings._providers[idx];
 }
 
+const schema::LlmProvider* SettingsDialog::currentProvider() const {
+    int idx = _currentProviderIdx;
+    if (idx < 0 || idx >= (int)_settings._providers.size()) return nullptr;
+    return &_settings._providers[idx];
+}
+
 bool SettingsDialog::isProviderNameDuplicate(const std::string& name, int exceptIdx) const {
     for (int i = 0; i < (int)_settings._providers.size(); ++i) {
         if (i == exceptIdx) continue;
@@ -189,7 +195,7 @@ bool SettingsDialog::isProviderNameDuplicate(const std::string& name, int except
 }
 
 bool SettingsDialog::isModelNameDuplicate(const std::string& name, int exceptIdx) const {
-    auto* p = const_cast<SettingsDialog*>(this)->currentProvider();
+    const schema::LlmProvider* p = currentProvider();   // const 重载，无需 const_cast
     if (!p) return false;
     for (int i = 0; i < (int)p->_models.size(); ++i) {
         if (i == exceptIdx) continue;

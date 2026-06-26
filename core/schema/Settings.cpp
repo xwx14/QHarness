@@ -56,11 +56,11 @@ void to_json(nlohmann::json& j, const Settings& s) {
 }
 
 void from_json(const nlohmann::json& j, Settings& s) {
-    if (j.contains("providers"))          j.at("providers").get_to(s._providers);
-    if (j.contains("activeProviderName")) j.at("activeProviderName").get_to(s._activeProviderName);
-    if (j.contains("activeModelName"))    j.at("activeModelName").get_to(s._activeModelName);
-    if (j.contains("enableThinking"))     j.at("enableThinking").get_to(s._enableThinking);
-    if (j.contains("workDir"))            j.at("workDir").get_to(s._workDir);
+    if (j.contains("providers"))          j.at("providers").get_to(s._providers);      // vector：contains+at
+    s._activeProviderName = j.value("activeProviderName", "");                          // 标量：value 默认（与 LlmProvider 一致）
+    s._activeModelName    = j.value("activeModelName", "");
+    s._enableThinking     = j.value("enableThinking", false);
+    s._workDir            = j.value("workDir", "");
     if (j.contains("enabledTools"))       j.at("enabledTools").get_to(s._enabledTools);
 }
 

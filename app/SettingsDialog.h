@@ -50,6 +50,7 @@ private:
     bool isProviderNameDuplicate(const std::string& name, int exceptIdx) const;
     bool isModelNameDuplicate(const std::string& name, int exceptIdx) const;
     schema::LlmProvider* currentProvider();
+    const schema::LlmProvider* currentProvider() const;   // const 重载，供 const 成员（isModelNameDuplicate）只读访问
     void clearModelTableSignals(bool block);   // 重建表格时屏蔽 cellChanged
 
     schema::Settings _settings;
