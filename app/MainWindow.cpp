@@ -49,7 +49,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
     // 菜单栏：设置入口
     auto* settingsMenu = menuBar()->addMenu(QStringLiteral("设置(&S)"));
-    auto* settingsAction = settingsMenu->addAction(QStringLiteral("设置..."));
+    auto* settingsAction = settingsMenu->addAction(QStringLiteral("设置…"));
     connect(settingsAction, &QAction::triggered, this, &MainWindow::onSettings);
 
     // 启动加载配置

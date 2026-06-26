@@ -12,7 +12,6 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QString>
-#include <QStringList>
 
 namespace qh {
 namespace app {
@@ -197,8 +196,20 @@ void SettingsDialog::onEditChanged() {
     int idx = currentRow();
     if (idx < 0 || idx >= (int)_settings._profiles.size()) return;
     auto& p = _settings._profiles[idx];
-    QString oldName = QString::fromStdString(p._name);
-    p._name      = _nameEdit->text().trimmed().toStdString();
+    std::string oldName = p._name;
+    std::string newName = _nameEdit->text().trimmed().toStdString();
+
+    // 重名校验：新名与除自身外的其他 profile 重名则拒绝
+    if (newName != oldName && isNameDuplicate(newName, idx)) {
+        QMessageBox::warning(this, QStringLiteral("重名"),
+                             QStringLiteral("已存在同名 profile，名称未更改"));
+        _loading = true;
+        _nameEdit->setText(QString::fromStdString(oldName));
+        _loading = false;
+        return;  // p._name 保持旧名不改
+    }
+
+    p._name = newName;
     p._providerType = static_cast<schema::ProviderType>(_typeCombo->currentData().toInt());
     p._baseUrl   = _baseUrlEdit->text().toStdString();
     p._apiKey    = _apiKeyEdit->text().toStdString();
@@ -210,17 +221,32 @@ void SettingsDialog::onEditChanged() {
     int m = _maxTokensEdit->text().trimmed().toInt(&mok);
     p._maxTokens = mok ? std::optional<int>(m) : std::nullopt;
     // 名称变化 → 刷新列表显示
-    if (oldName != QString::fromStdString(p._name)) {
+    if (oldName != p._name) {
         rebuildProfileList(idx);
     }
 }
 
 void SettingsDialog::onAddProfile() {
     schema::LlmProfile p;
-    p._name = "新配置 " + std::to_string(_settings._profiles.size() + 1);
     p._providerType = schema::ProviderType::OpenAI;
+    std::string baseName = "新配置 " + std::to_string(_settings._profiles.size() + 1);
+    std::string name = baseName;
+    int suffix = 2;
+    while (isNameDuplicate(name, -1)) {
+        name = baseName + " (" + std::to_string(suffix) + ")";
+        ++suffix;
+    }
+    p._name = name;
     _settings._profiles.push_back(p);
     rebuildProfileList((int)_settings._profiles.size() - 1);
+}
+
+bool SettingsDialog::isNameDuplicate(const std::string& name, int exceptIdx) const {
+    for (int i = 0; i < (int)_settings._profiles.size(); ++i) {
+        if (i == exceptIdx) continue;
+        if (_settings._profiles[i]._name == name) return true;
+    }
+    return false;
 }
 
 void SettingsDialog::onDelProfile() {

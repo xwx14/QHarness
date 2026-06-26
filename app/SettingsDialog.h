@@ -35,6 +35,7 @@ private:
     void rebuildProfileList(int selectRow);
     void loadProfileToForm(int idx);
     int  currentRow() const;
+    bool isNameDuplicate(const std::string& name, int exceptIdx) const;
 
     schema::Settings _settings;
     bool _loading = false;        // 回显时屏蔽 onEditChanged，避免回写循环

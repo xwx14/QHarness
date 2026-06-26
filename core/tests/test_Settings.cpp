@@ -1,6 +1,9 @@
 #include "TestHarness.h"
 #include "schema/Settings.h"
+#include "config/SettingsStore.h"
 #include <nlohmann/json.hpp>
+#include <fstream>
+#include <cstdio>
 
 using nlohmann::json;
 
@@ -75,9 +78,6 @@ QH_TEST(findActiveProfile_hit_miss_empty) {
 }
 
 // ========== SettingsStore 持久化测试 ==========
-#include "config/SettingsStore.h"
-#include <fstream>
-#include <cstdio>
 
 QH_TEST(store_save_load_roundtrip) {
     const std::string path = "test_setting_tmp.json";
