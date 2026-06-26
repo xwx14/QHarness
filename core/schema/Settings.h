@@ -24,13 +24,13 @@ NLOHMANN_JSON_SERIALIZE_ENUM(ProviderType, {
 // 单套 LLM 连接配置（一个 profile = 一组 baseUrl/apiKey/model 等）
 class QH_API LlmProfile {
 public:
-    std::string  name;                                   // profile 唯一标识（用户命名）
-    ProviderType providerType = ProviderType::OpenAI;
-    std::string  baseUrl;
-    std::string  apiKey;
-    std::string  model;
-    std::optional<double> temperature;                   // nullopt = 不下发，用 provider 默认
-    std::optional<int>    maxTokens;
+    std::string  _name;                                   // profile 唯一标识（用户命名）
+    ProviderType _providerType = ProviderType::OpenAI;
+    std::string  _baseUrl;
+    std::string  _apiKey;
+    std::string  _model;
+    std::optional<double> _temperature;                   // nullopt = 不下发，用 provider 默认
+    std::optional<int>    _maxTokens;
 };
 
 QH_API void to_json(nlohmann::json& j, const LlmProfile& p);
@@ -39,11 +39,11 @@ QH_API void from_json(const nlohmann::json& j, LlmProfile& p);
 // 应用全局设置（多 profile + 引擎开关 + 工作目录 + 启用工具）
 class QH_API Settings {
 public:
-    std::vector<LlmProfile>  profiles;
-    std::string              activeProfileName;           // 按 name 引用激活项；空 = 未激活
-    bool                     enableThinking = false;      // 两阶段引擎的慢思考 Phase1 开关
-    std::string              workDir;                     // 空 = 运行时回退 currentPath
-    std::vector<std::string> enabledTools;                // 启用的工具名子集（如 "bash"）
+    std::vector<LlmProfile>  _profiles;
+    std::string              _activeProfileName;           // 按 _name 引用激活项；空 = 未激活
+    bool                     _enableThinking = false;      // 两阶段引擎的慢思考 Phase1 开关
+    std::string              _workDir;                     // 空 = 运行时回退 currentPath
+    std::vector<std::string> _enabledTools;                // 启用的工具名子集（如 "bash"）
 };
 
 QH_API void to_json(nlohmann::json& j, const Settings& s);

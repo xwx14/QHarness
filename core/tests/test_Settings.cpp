@@ -14,25 +14,25 @@ QH_TEST(settings_empty_omitempty) {
     QH_CHECK(!j.contains("workDir"));
     QH_CHECK(!j.contains("enabledTools"));
     auto back = j.get<qh::schema::Settings>();
-    QH_CHECK(back.profiles.empty());
-    QH_CHECK(!back.enableThinking);
+    QH_CHECK(back._profiles.empty());
+    QH_CHECK(!back._enableThinking);
 }
 
 QH_TEST(settings_profile_roundtrip) {
     qh::schema::Settings s;
-    s.enableThinking = true;
-    s.workDir = "E:/work";
-    s.enabledTools = {"bash"};
+    s._enableThinking = true;
+    s._workDir = "E:/work";
+    s._enabledTools = {"bash"};
     qh::schema::LlmProfile p;
-    p.name = "glm";
-    p.providerType = qh::schema::ProviderType::OpenAI;
-    p.baseUrl = "https://api.example.com";
-    p.apiKey = "sk-xxx";
-    p.model = "glm-4";
-    p.temperature = 0.7;
-    p.maxTokens = 4096;
-    s.profiles.push_back(p);
-    s.activeProfileName = "glm";
+    p._name = "glm";
+    p._providerType = qh::schema::ProviderType::OpenAI;
+    p._baseUrl = "https://api.example.com";
+    p._apiKey = "sk-xxx";
+    p._model = "glm-4";
+    p._temperature = 0.7;
+    p._maxTokens = 4096;
+    s._profiles.push_back(p);
+    s._activeProfileName = "glm";
 
     json j = s;
     QH_CHECK(j.contains("profiles"));
@@ -44,19 +44,19 @@ QH_TEST(settings_profile_roundtrip) {
     QH_CHECK(j["enableThinking"] == true);
 
     auto back = j.get<qh::schema::Settings>();
-    QH_CHECK_EQ(back.profiles.size(), (size_t)1);
-    QH_CHECK_EQ(back.profiles[0].name, std::string("glm"));
-    QH_CHECK(back.profiles[0].temperature.has_value());
-    QH_CHECK(back.profiles[0].providerType == qh::schema::ProviderType::OpenAI);
-    QH_CHECK_EQ(back.activeProfileName, std::string("glm"));
-    QH_CHECK(back.enableThinking);
-    QH_CHECK_EQ(back.enabledTools.size(), (size_t)1);
+    QH_CHECK_EQ(back._profiles.size(), (size_t)1);
+    QH_CHECK_EQ(back._profiles[0]._name, std::string("glm"));
+    QH_CHECK(back._profiles[0]._temperature.has_value());
+    QH_CHECK(back._profiles[0]._providerType == qh::schema::ProviderType::OpenAI);
+    QH_CHECK_EQ(back._activeProfileName, std::string("glm"));
+    QH_CHECK(back._enableThinking);
+    QH_CHECK_EQ(back._enabledTools.size(), (size_t)1);
 }
 
 QH_TEST(settings_profile_optional_omitempty) {
-    qh::schema::LlmProfile p;   // temperature/maxTokens 均 nullopt
-    p.name = "x";
-    p.model = "m";
+    qh::schema::LlmProfile p;   // _temperature/_maxTokens 均 nullopt
+    p._name = "x";
+    p._model = "m";
     json j = p;
     QH_CHECK(!j.contains("temperature"));
     QH_CHECK(!j.contains("maxTokens"));
@@ -64,12 +64,12 @@ QH_TEST(settings_profile_optional_omitempty) {
 
 QH_TEST(findActiveProfile_hit_miss_empty) {
     qh::schema::Settings s;
-    QH_CHECK(qh::schema::findActiveProfile(s) == nullptr);   // active 空
-    qh::schema::LlmProfile p; p.name = "glm";
-    s.profiles.push_back(p);
-    s.activeProfileName = "glm";
+    QH_CHECK(qh::schema::findActiveProfile(s) == nullptr);   // _activeProfileName 空
+    qh::schema::LlmProfile p; p._name = "glm";
+    s._profiles.push_back(p);
+    s._activeProfileName = "glm";
     QH_CHECK(qh::schema::findActiveProfile(s) != nullptr);
-    QH_CHECK_EQ(qh::schema::findActiveProfile(s)->name, std::string("glm"));
-    s.activeProfileName = "missing";
+    QH_CHECK_EQ(qh::schema::findActiveProfile(s)->_name, std::string("glm"));
+    s._activeProfileName = "missing";
     QH_CHECK(qh::schema::findActiveProfile(s) == nullptr);   // 未命中
 }
