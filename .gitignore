@@ -12,9 +12,7 @@ cmake_install.cmake
 !CMakeLists.txt
 
 # 编译产物
-*.lib
 *.exp
-*.pdb
 *.ilk
 *.obj
 *.o
@@ -36,10 +34,6 @@ qrc_*
 # 本地技术文档（不纳入版本管理）
 docs/技术文档/
 /.claude/skills/gongzhonghao-article
-
-# OpenSSL 产物（third/openssl 提交进版本管理，例外全局 *.lib/*.dll 忽略）
-!third/openssl/
-!third/openssl/**
 
 # SDD scratch（superpowers subagent-driven-development 临时文件，不提交）
 .superpowers/
