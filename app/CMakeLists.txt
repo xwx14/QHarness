@@ -11,6 +11,8 @@ add_executable(qharness_app WIN32
     EngineThread.cpp
     ChatDock.h
     ChatDock.cpp
+    SettingsDialog.h
+    SettingsDialog.cpp
 )
 # 统一输出到 build/out：可执行程序与所有 DLL（含 windeployqt 部署的 Qt 运行时）集中于此
 # 多配置生成器（VS）自动追加配置子目录：build/out/Release、build/out/Debug
