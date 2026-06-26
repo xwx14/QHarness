@@ -22,6 +22,7 @@ add_library(qharness_core SHARED
     memory/Memory.h
     memory/MemoryFile.h         memory/MemoryFile.cpp
     context/Composer.h          context/Composer.cpp
+    config/SettingsStore.h      config/SettingsStore.cpp
 )
 target_include_directories(qharness_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(qharness_core PRIVATE QH_BUILDING_DLL)

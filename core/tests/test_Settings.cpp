@@ -73,3 +73,46 @@ QH_TEST(findActiveProfile_hit_miss_empty) {
     s._activeProfileName = "missing";
     QH_CHECK(qh::schema::findActiveProfile(s) == nullptr);   // 未命中
 }
+
+// ========== SettingsStore 持久化测试 ==========
+#include "config/SettingsStore.h"
+#include <fstream>
+#include <cstdio>
+
+QH_TEST(store_save_load_roundtrip) {
+    const std::string path = "test_setting_tmp.json";
+    {
+        qh::schema::Settings s;
+        s._enableThinking = true;
+        s._workDir = "E:/w";
+        qh::schema::LlmProfile p; p._name = "a"; p._model = "m";
+        s._profiles.push_back(p);
+        s._activeProfileName = "a";
+        qh::config::SettingsStore store(path);
+        QH_CHECK(store.save(s));
+        QH_CHECK(store.lastError().empty());
+    }
+    qh::config::SettingsStore store(path);
+    auto loaded = store.load();
+    QH_CHECK_EQ(loaded._profiles.size(), (size_t)1);
+    QH_CHECK_EQ(loaded._activeProfileName, std::string("a"));
+    QH_CHECK(loaded._enableThinking);
+    std::remove(path.c_str());
+}
+
+QH_TEST(store_load_missing_file_defaults) {
+    qh::config::SettingsStore store("definitely_not_exist_xyz.json");
+    auto s = store.load();
+    QH_CHECK(s._profiles.empty());
+    QH_CHECK(store.lastError().empty());        // 文件缺失属正常首次运行
+}
+
+QH_TEST(store_load_corrupt_json) {
+    const std::string path = "test_setting_bad.json";
+    { std::ofstream out(path); out << "{ this is not json"; }
+    qh::config::SettingsStore store(path);
+    auto s = store.load();
+    QH_CHECK(s._profiles.empty());               // 损坏 → 默认
+    QH_CHECK(!store.lastError().empty());       // 记错
+    std::remove(path.c_str());
+}
