@@ -5,6 +5,8 @@
 #include "ChatDock.h"
 #include "QPostMessage.h"
 #include "EngineThread.h"   // test() 的 EngineThread::EngineKind 参数
+#include <string>
+#include "schema/Settings.h"
 
 namespace qh {
 namespace app {
@@ -17,6 +19,7 @@ public:
     void test(EngineThread::EngineKind kind = EngineThread::EngineKind::ReAct);
 private slots:
     void onChatSend();
+    void onSettings();
 
 private:
     void appendLog(const QString& text);
@@ -25,6 +28,11 @@ private:
     ChatDock* _chatDock = nullptr;
     QPostMessage* _postMessage = nullptr;
     EngineThread* _engineThread = nullptr;   // parent this；自带 mock+engine 子树；finished 时清 nullptr + deleteLater
+    void loadSettings();
+    void saveSettings();
+
+    schema::Settings _settings;   // 当前配置（内存副本）
+    std::string _configPath;      // <exeDir>/config/setting.json
 };
 
 } // namespace app

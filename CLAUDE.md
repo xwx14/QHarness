@@ -59,6 +59,10 @@ build/out/Release/qharness_app.exe
 
 `engine/{Engine,EngineReActLoop}`、`provider/{Provider,ProviderOpenAI,ProviderClaude,MockProvider}`、`tool/{Tool,ToolManager}`、`interaction/{Interaction,InteractionFeishu}`、`memory/{Memory,MemoryFile}`、`context/{Composer}`。基类纯虚（`virtual ... = 0`）；派生类的构造函数与方法体在对应 `.cpp`（骨架阶段为 `/* TODO */` 占位），头文件仅声明。`Provider::generate` 新签名为 `generate(const schema::CancellationToken&, messages, tools) -> GenerateResult`，失败约定 `GenerateResult::error` 非空（不再抛异常）；`CancellationToken`（`schema/CancellationToken.h`，`qh::schema`，轻量取消/超时，对齐 Go `context.Context` 核心语义）作为首参。`MockProvider` 忠实移植 Go `mockProvider`（`_turn` 计数：第 1 轮返回 `bash` 工具调用、第 2 轮起纯文本"任务完成"），用于引擎循环测试。`core/tests/skeleton_compile_check.cpp` 强制实例化各派生类做链接期检查。
 
+### Settings（`core/schema/Settings.h` + `Settings.cpp`、`core/config/SettingsStore.h` + `SettingsStore.cpp`）
+
+应用配置：`ProviderType`(OpenAI/Claude) enum、`LlmProfile`(name/providerType/baseUrl/apiKey/model/temperature/maxTokens)、`Settings`(多 profiles + activeProfileName + enableThinking + workDir + enabledTools)，ADL to_json/from_json（空值 omitempty），`findActiveProfile`。`SettingsStore`（core/config，纯 C++，路径由 app 注入）负责 load/save 到 `<exeDir>/config/setting.json`：文件缺失→默认、JSON 损坏→默认+lastError。app 层 `MainWindow` 持 `_settings`，`SettingsDialog`(单 QTabWidget) 编辑，`EngineThread` 构造收 `Settings` 值拷贝按配置装配 Provider/Engine/工具（值注入，worker 线程只读自己拷贝，与 UI 零共享）。
+
 ### 命名空间
 
 `qh::schema`、`qh::engine`、`qh::provider`、`qh::tool`、`qh::interaction`、`qh::memory`、`qh::context`、`qh::app`、`qh::test`。`core/` 目录是 `qharness_core` 的公共 include 根，内部头文件用根相对路径引用（如 `#include "schema/Message.h"`、`#include "provider/Provider.h"`）。
