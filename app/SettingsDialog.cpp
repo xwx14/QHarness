@@ -367,14 +367,27 @@ void SettingsDialog::onModelCellChanged(int row, int col) {
     (void)col;
     std::string oldName = p->_models[row]._name;
     std::string newName = _modelTable->item(row, 0) ? _modelTable->item(row, 0)->text().trimmed().toStdString() : "";
+    // M1: 空模型名拒绝并回滚
+    if (newName.empty()) {
+        QMessageBox::warning(this, QStringLiteral("无效"),
+                             QStringLiteral("模型名不能为空"));
+        _loading = true;
+        _modelTable->item(row, 0)->setText(QString::fromStdString(oldName));
+        _loading = false;
+        return;
+    }
     // 模型重名（同供应商内）拒绝
-    if (newName != oldName && !newName.empty() && isModelNameDuplicate(newName, row)) {
+    if (newName != oldName && isModelNameDuplicate(newName, row)) {
         QMessageBox::warning(this, QStringLiteral("重名"),
                              QStringLiteral("该供应商下已存在同名模型，名称未更改"));
         _loading = true;
         _modelTable->item(row, 0)->setText(QString::fromStdString(oldName));
         _loading = false;
         return;
+    }
+    // I1: 改名时同步激活引用（当前激活模型改名 → activeModelName 跟随）
+    if (newName != oldName && oldName == _settings._activeModelName) {
+        _settings._activeModelName = newName;
     }
     p->_models[row]._name = newName;
     bool tok = false;
