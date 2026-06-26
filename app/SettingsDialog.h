@@ -46,7 +46,7 @@ private:
     void loadProviderToForm(int idx);
     void rebuildModelTable();
     int  currentProviderRow() const;
-    int  currentModelRow() const;
+
     bool isProviderNameDuplicate(const std::string& name, int exceptIdx) const;
     bool isModelNameDuplicate(const std::string& name, int exceptIdx) const;
     schema::LlmProvider* currentProvider();

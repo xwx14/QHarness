@@ -207,12 +207,11 @@ void SettingsDialog::rebuildProviderList(int selectRow) {
         _providerList->addItem(label);
     }
     _providerList->blockSignals(false);
-    if (selectRow >= 0 && selectRow < _providerList->count()) {
-        _providerList->setCurrentRow(selectRow);   // 触发 onProviderSelected
-    } else {
-        _currentProviderIdx = -1;
-        loadProviderToForm(-1);
-    }
+    if (selectRow < 0 || selectRow >= _providerList->count()) selectRow = -1;
+    _loading = true;
+    if (selectRow >= 0) _providerList->setCurrentRow(selectRow);   // 屏蔽 onProviderSelected
+    _loading = false;
+    loadProviderToForm(selectRow);   // 显式回显（不改 _activeProviderName）
 }
 
 void SettingsDialog::loadProviderToForm(int idx) {
@@ -400,7 +399,6 @@ void SettingsDialog::onAddModel() {
     std::string base = "新模型 " + std::to_string(p->_models.size() + 1);
     std::string name = base;
     int suffix = 2;
-    // 临时设 _currentProviderIdx 用于 isModelNameDuplicate（currentProvider 已是 p）
     while (isModelNameDuplicate(name, -1)) {
         name = base + " (" + std::to_string(suffix) + ")";
         ++suffix;
