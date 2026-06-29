@@ -8,8 +8,9 @@
 #include "provider/ProviderClaude.h"
 #include "provider/MockProvider.h"
 #include "provider/MockTwoStageProvider.h"
-#include "tool/MockBashTool.h"
+#include "tool/BashTool.h"
 #include "tool/ReadFileTool.h"
+#include "tool/WriteFileTool.h"
 #include "tool/ToolManager.h"
 #include <utility>
 
@@ -63,9 +64,11 @@ EngineThread::EngineThread(QPostMessage* postMessage, std::string prompt,
     for (const auto& name : _settings._enabledTools) {
         std::unique_ptr<tool::Tool> t;
         if (name == "bash") {
-            t = std::make_unique<tool::MockBashTool>();
+            t = std::make_unique<tool::BashTool>(workDir);
         } else if (name == "read_file") {
             t = std::make_unique<tool::ReadFileTool>(workDir);
+        } else if (name == "write_file") {
+            t = std::make_unique<tool::WriteFileTool>(workDir);
         }
         if (t) {
             _toolManager->registerTool(*t);

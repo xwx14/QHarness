@@ -35,6 +35,11 @@ protected:
     // 通过路径穿越检查（规范化后仍位于 base 之内）且文件存在则返回；越界/不存在/解析失败返回 nullopt。
     std::optional<std::filesystem::path> resolveInside(const std::filesystem::path& base,
                                                        const std::string& relPath) const;
+
+    // 解析 relPath 到工作目录 base 内的「可写」绝对路径：穿越检查（位于 base 内）但
+    // 不要求目标已存在（写新文件）。父目录可不存在（调用方按需 create_directories）。
+    std::optional<std::filesystem::path> resolveInsideForWrite(const std::filesystem::path& base,
+                                                               const std::string& relPath) const;
 };
 
 } // namespace tool

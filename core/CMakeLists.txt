@@ -23,6 +23,11 @@ add_library(qharness_core SHARED
     tool/ToolManager.h          tool/ToolManager.cpp
     tool/MockBashTool.h         tool/MockBashTool.cpp
     tool/ReadFileTool.h         tool/ReadFileTool.cpp
+    tool/WriteFileTool.h        tool/WriteFileTool.cpp
+    tool/BashTool.h
+    tool/WinBashTool.h
+    tool/LinuxBashTool.h
+    tool/MacBashTool.h
     tool/PathCodec.h
     tool/ContentCodec.h
     interaction/Interaction.h
@@ -44,6 +49,15 @@ target_link_libraries(qharness_core PRIVATE
     $<IF:$<CONFIG:Debug>,${OPENSSL_ROOT_DIR}/libd/libssl.lib,${OPENSSL_ROOT_DIR}/lib/libssl.lib>
     $<IF:$<CONFIG:Debug>,${OPENSSL_ROOT_DIR}/libd/libcrypto.lib,${OPENSSL_ROOT_DIR}/lib/libcrypto.lib>)
 target_compile_definitions(qharness_core PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
+
+# Bash 系列：编译期按平台只编一个实现（BashTool.h 用 using 选别名）。
+if(WIN32)
+    target_sources(qharness_core PRIVATE tool/WinBashTool.cpp)
+elseif(APPLE)
+    target_sources(qharness_core PRIVATE tool/MacBashTool.cpp)
+elseif(UNIX)
+    target_sources(qharness_core PRIVATE tool/LinuxBashTool.cpp)
+endif()
 
 # OpenSSL 运行时 dll 部署到 core 输出目录（Debug→bind/，Release→bin/；
 # qharness_core.dll 加载需，tests/app exe 同目录运行也需）
@@ -81,6 +95,7 @@ add_executable(qharness_core_tests
     tests/test_MockTwoStageProvider.cpp
     tests/test_MockBashTool.cpp
     tests/test_ReadFileTool.cpp
+    tests/test_WriteFileTool.cpp
     tests/test_ContentCodec.cpp
     tests/test_EngineReActLoop.cpp
     tests/test_Engine2StageReAct.cpp
@@ -97,5 +112,9 @@ set_target_properties(qharness_core_tests PROPERTIES
 )
 if(MSVC)
     target_compile_options(qharness_core_tests PRIVATE /utf-8)
+endif()
+# WinBashTool 测试仅在 Windows 编译/链接（Linux/Mac 无 WinBashTool.cpp）
+if(WIN32)
+    target_sources(qharness_core_tests PRIVATE tests/test_WinBashTool.cpp)
 endif()
 add_test(NAME schema_tests COMMAND qharness_core_tests)

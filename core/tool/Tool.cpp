@@ -36,5 +36,23 @@ std::optional<fs::path> Tool::resolveInside(const fs::path& base,
     return std::nullopt;
 }
 
+std::optional<fs::path> Tool::resolveInsideForWrite(const fs::path& base,
+                                                    const std::string& relPath) const {
+    // 写文件语义：穿越检查（位于 base 内）但不要求目标已存在。
+    // 取首个能规范化且不越界的候选（写新文件无需命中已存在文件）。
+    for (const fs::path& cand : pathCodec::candidatePaths(relPath)) {
+        std::error_code ec;
+        const fs::path full = fs::weakly_canonical(base / cand, ec);
+        if (ec) continue;
+        const fs::path rel = fs::relative(full, base, ec);
+        if (ec || rel.empty() ||
+            rel.native().rfind(fs::path("..").native(), 0) == 0) {
+            continue;
+        }
+        return full;   // 不查 exists
+    }
+    return std::nullopt;
+}
+
 } // namespace tool
 } // namespace qh
