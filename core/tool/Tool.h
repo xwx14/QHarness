@@ -3,6 +3,9 @@
 #include "schema/Message.h"
 #include "schema/PostMessage.h"
 #include "qh_export.h"
+#include <filesystem>
+#include <optional>
+#include <string>
 
 namespace qh {
 namespace tool {
@@ -20,6 +23,18 @@ public:
 
 protected:
     schema::ToolDefinition _definition;
+
+    // 工作目录（UTF-8）：文件类工具用以限定可访问范围（路径穿越防护）；默认空。
+    std::string _workDir;
+
+    // 将 _workDir(UTF-8) 按平台编码转换并规范化为绝对基目录 base。
+    // 解析失败（候选均无法规范化，如 _workDir 为空）返回空 path。
+    std::filesystem::path resolveWorkBase() const;
+
+    // 解析 relPath 到工作目录 base 内的绝对路径：对 relPath 的多种编码候选逐个尝试，
+    // 通过路径穿越检查（规范化后仍位于 base 之内）且文件存在则返回；越界/不存在/解析失败返回 nullopt。
+    std::optional<std::filesystem::path> resolveInside(const std::filesystem::path& base,
+                                                       const std::string& relPath) const;
 };
 
 } // namespace tool

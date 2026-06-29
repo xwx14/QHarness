@@ -19,7 +19,7 @@ add_library(qharness_core SHARED
     provider/MockProvider.h     provider/MockProvider.cpp
     provider/MockTwoStageProvider.h provider/MockTwoStageProvider.cpp
     provider/ProviderHttp.h        provider/ProviderHttp.cpp
-    tool/Tool.h
+    tool/Tool.h                 tool/Tool.cpp
     tool/ToolManager.h          tool/ToolManager.cpp
     tool/MockBashTool.h         tool/MockBashTool.cpp
     tool/ReadFileTool.h         tool/ReadFileTool.cpp

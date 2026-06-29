@@ -18,9 +18,6 @@ public:
 
     // 超长内容截断阈值（字节）：防止读取超大文件撑爆上下文
     static const std::size_t kMaxLen = 8000;
-
-private:
-    std::string _workDir;  // 工作区根目录（绝对或相对均可，执行时规范化）
 };
 
 } // namespace tool
