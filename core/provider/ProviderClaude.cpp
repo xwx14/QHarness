@@ -125,7 +125,8 @@ GenerateResult ProviderClaude::generate(
     }
 
     result.message = parseClaudeResponse(resp.body);
-    if (!result.message._content.empty()) chat(result.message._content);
+    // 对话窗口投递由引擎层统一负责（引擎掌握"最终回复 vs 中间步骤"语义）；
+    // provider 仅调 API + 解析，不越权写对话窗口，否则与引擎重复投递致回复显示两遍
     if (!result.message._toolCalls.empty())
         think("工具调用 " + std::to_string(result.message._toolCalls.size()) + " 个");
     return result;
