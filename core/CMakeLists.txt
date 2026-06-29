@@ -17,6 +17,7 @@ add_library(qharness_core SHARED
     tool/Tool.h
     tool/ToolManager.h          tool/ToolManager.cpp
     tool/MockBashTool.h         tool/MockBashTool.cpp
+    tool/ReadFileTool.h         tool/ReadFileTool.cpp
     interaction/Interaction.h
     interaction/InteractionFeishu.h    interaction/InteractionFeishu.cpp
     memory/Memory.h
@@ -72,6 +73,7 @@ add_executable(qharness_core_tests
     tests/test_MockProvider.cpp
     tests/test_MockTwoStageProvider.cpp
     tests/test_MockBashTool.cpp
+    tests/test_ReadFileTool.cpp
     tests/test_EngineReActLoop.cpp
     tests/test_Engine2StageReAct.cpp
     tests/MockHttpServer.h
