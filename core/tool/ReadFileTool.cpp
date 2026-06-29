@@ -1,4 +1,5 @@
 #include "tool/ReadFileTool.h"
+#include "tool/ContentCodec.h"
 #include <nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
@@ -57,8 +58,8 @@ schema::ToolResult ReadFileTool::execute(const schema::ToolCall& call) {
         return result;
     }
 
-    // 3. 物理 IO：文本模式读取全部内容（Windows 下自动将 CRLF 规范化为 LF）
-    std::ifstream ifs(full);
+    // 3. 物理 IO：二进制读取全部原始字节（保留原编码字节，交由 toUtf8 检测/转换）
+    std::ifstream ifs(full, std::ios::binary);
     if (!ifs) {
         result._output = "打开文件失败: " + full.u8string();
         result._isError = true;
@@ -72,9 +73,12 @@ schema::ToolResult ReadFileTool::execute(const schema::ToolCall& call) {
         return result;
     }
 
-    // 4. 长度截断保护：超过阈值按字节截断，避免超大文件撑爆上下文
+    // 4. 内容编码转换：检测 UTF-8/GBK/UTF-16，统一转 UTF-8 返回给 AI（CLAUDE.md 约定）
+    content = contentCodec::toUtf8(content);
+
+    // 5. 长度截断保护：按 UTF-8 字符边界截断（不切断多字节字符）
     if (content.size() > kMaxLen) {
-        content = content.substr(0, kMaxLen) +
+        content = contentCodec::truncateUtf8Safe(content, kMaxLen) +
             "\n\n...[由于内容过长，已被系统截断至前 " + std::to_string(kMaxLen) + " 字节]...";
     }
 

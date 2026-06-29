@@ -4,6 +4,7 @@
 #include "schema/Message.h"
 #include <filesystem>
 #include <fstream>
+#include <initializer_list>
 #include <string>
 
 namespace fs = std::filesystem;
@@ -17,6 +18,20 @@ fs::path makeWorkDir(const std::string& fileName, const std::string& fileContent
     ofs << fileContent;
     ofs.close();
     return dir;
+}
+
+// 写原始字节到临时工作区文件（构造 GBK/UTF-16 等非 UTF-8 编码的典型文本文件）
+fs::path makeWorkDirBinary(const std::string& fileName, const std::string& rawBytes) {
+    fs::path dir = fs::temp_directory_path() / "qh_readfile_test";
+    fs::create_directories(dir);
+    std::ofstream ofs(dir / fileName, std::ios::binary);
+    ofs.write(rawBytes.data(), static_cast<std::streamsize>(rawBytes.size()));
+    return dir;
+}
+
+// 字节数组 → std::string
+std::string bytes(std::initializer_list<unsigned char> bs) {
+    return std::string(reinterpret_cast<const char*>(bs.begin()), bs.size());
 }
 } // namespace
 
@@ -137,3 +152,54 @@ QH_TEST(pathcodec_candidate_paths_windows_gbk_first) {
     QH_CHECK(v[1] == expected);
 }
 #endif
+
+// === 典型文本文件读取回归测试：各编码端到端转 UTF-8，防止 ReadFileTool 内容编码处理回归 ===
+QH_TEST(readfiletool_reads_ascii_file) {
+    fs::path dir = makeWorkDirBinary("ascii.txt", "plain ascii text");
+    qh::tool::ReadFileTool t(dir.string());
+    qh::schema::ToolCall call;
+    call._id = "t1"; call._name = "read_file";
+    call._arguments = "{\"path\":\"ascii.txt\"}";
+    qh::schema::ToolResult r = t.execute(call);
+    QH_CHECK(!r._isError);
+    QH_CHECK_EQ(r._output, std::string("plain ascii text"));
+}
+
+QH_TEST(readfiletool_reads_utf8_with_bom) {
+    // EF BB BF + "测试"(UTF-8)
+    std::string content = bytes({0xEF, 0xBB, 0xBF}) + std::string("测试");
+    fs::path dir = makeWorkDirBinary("utf8bom.txt", content);
+    qh::tool::ReadFileTool t(dir.string());
+    qh::schema::ToolCall call;
+    call._id = "t2"; call._name = "read_file";
+    call._arguments = "{\"path\":\"utf8bom.txt\"}";
+    qh::schema::ToolResult r = t.execute(call);
+    QH_CHECK(!r._isError);
+    QH_CHECK_EQ(r._output, std::string("测试"));  // BOM 剥离
+}
+
+QH_TEST(readfiletool_reads_gbk_file) {
+    // "测试代码" GBK = B2 E2 CA D4 B4 FA C2 EB
+    std::string gbk = bytes({0xB2, 0xE2, 0xCA, 0xD4, 0xB4, 0xFA, 0xC2, 0xEB});
+    fs::path dir = makeWorkDirBinary("gbk.txt", gbk);
+    qh::tool::ReadFileTool t(dir.string());
+    qh::schema::ToolCall call;
+    call._id = "t3"; call._name = "read_file";
+    call._arguments = "{\"path\":\"gbk.txt\"}";
+    qh::schema::ToolResult r = t.execute(call);
+    QH_CHECK(!r._isError);
+    QH_CHECK_EQ(r._output, std::string("测试代码"));  // GBK→UTF-8
+}
+
+QH_TEST(readfiletool_reads_utf16le_file) {
+    // BOM(FF FE) + "测试"(LE: 测=4B 6D, 试=D5 8B)
+    std::string u16 = bytes({0xFF, 0xFE, 0x4B, 0x6D, 0xD5, 0x8B});
+    fs::path dir = makeWorkDirBinary("utf16le.txt", u16);
+    qh::tool::ReadFileTool t(dir.string());
+    qh::schema::ToolCall call;
+    call._id = "t4"; call._name = "read_file";
+    call._arguments = "{\"path\":\"utf16le.txt\"}";
+    qh::schema::ToolResult r = t.execute(call);
+    QH_CHECK(!r._isError);
+    QH_CHECK_EQ(r._output, std::string("测试"));  // UTF-16 LE→UTF-8
+}

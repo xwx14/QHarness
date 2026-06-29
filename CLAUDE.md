@@ -73,7 +73,8 @@ build/out/Release/qharness_app.exe
 - **头文件列入 CMakeLists**：所有 `.h` 都加入 `add_library`/`add_executable` 源列表（VS 工程可见），不止列 `.cpp`。
 - **构建输出**：可执行程序与全部 DLL（含 `qharness_core.dll`——core 为 SHARED，以及 windeployqt 部署的 Qt 运行时）与 `qharness_core_tests.exe` 统一输出到 `build/out/{Release,Debug}`，由各目标的 `*_OUTPUT_DIRECTORY` 控制。
 - **源码 UTF-8**：MSVC 用 `/utf-8` 编译选项（core/app 的 CMakeLists 已配），中文注释/字符串才正常。
-- **文件名/内容编码**：与 AI 交互的所有数据（对话、tool_call 参数、工具返回结果）统一 UTF-8。Windows 文件名按本地代码页（中文系统为 GBK/936）解析，故文件类工具读写时须把 UTF-8 **文件名**转换为 GBK 字符；文件**内容**则按文件实际的编码读取，再转换为 UTF-8 返回给 AI。转换工具集中在 `core/tool/PathCodec.h`（C++11 `wstring_convert` + `codecvt_byname`，跨平台：Windows 用 `.936`、Linux 用 `zh_CN.GBK`）。当前 `ReadFileTool` 已实现文件名「GBK 优先、UTF-8→wide 兜底」的多候选命中；文件内容编码的自动检测/转换待实现。
+- **文件名/内容编码**：与 AI 交互的所有数据（对话、tool_call 参数、工具返回结果）统一 UTF-8。Windows 文件名按本地代码页（中文系统为 GBK/936）解析，故文件类工具读写时须把 UTF-8 **文件名**转换为 GBK 字符；文件**内容**则按文件实际的编码读取，再转换为 UTF-8 返回给 AI。转换工具集中在 `core/tool/PathCodec.h`（路径名编码，`wstring_convert` + `codecvt_byname`，Windows `.936` / Linux `zh_CN.GBK`）与 `core/tool/ContentCodec.h`（文件内容检测+转 UTF-8：BOM→UTF-8 严格校验→GBK→原样兜底，含 UTF-16）。`ReadFileTool` 以 binary 读原始字节，经 `contentCodec::toUtf8` 转换、`truncateUtf8Safe` 按字符边界截断。
+- **回归测试**：从 2026-06-29（文件内容编码转换）起确立回归测试实践——每个功能/bugfix 必须配套回归测试（用 `QH_TEST` 在 `core/tests/test_*.cpp` 编写并在 `core/CMakeLists.txt` 的 `qharness_core_tests` 源列表登记），提交前运行 `run_tests.bat`（或 `cmake --build build --config Release --target qharness_core_tests && build/out/Release/qharness_core_tests.exe`）须 **0 failures**。回归基线 = `qharness_core_tests` 全部用例，重点覆盖：编码（`PathCodec`/`ContentCodec`/各编码典型文本文件读取）、路径穿越防护（`resolveInside`）、工具注册分发。
 
 ## 坑点
 
