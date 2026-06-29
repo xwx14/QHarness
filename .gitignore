@@ -37,3 +37,7 @@ docs/技术文档/
 
 # SDD scratch（superpowers subagent-driven-development 临时文件，不提交）
 .superpowers/
+
+# codegraph 代码索引（本地工具产物，含 9MB+ SQLite 库，不纳入版本管理）
+.codegraph/
+.cursor/

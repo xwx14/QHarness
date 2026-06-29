@@ -4,7 +4,6 @@
 #include <QShortcut>
 #include <QKeySequence>
 #include <QTextBrowser>
-#include <QToolBar>
 #include <QDir>
 #include <QMenu>
 #include <QMenuBar>
@@ -36,17 +35,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     auto* sendShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return), this);
     connect(sendShortcut, &QShortcut::activated, this, &MainWindow::onChatSend);
 
-    // 工具栏：测试按钮（配置驱动，未配 profile 自动回退 mock）
-    auto* toolbar = addToolBar(QStringLiteral("main"));
-    auto* testBtn = new QPushButton(QStringLiteral("测试 ReAct"), this);
-    toolbar->addWidget(testBtn);
-    connect(testBtn, &QPushButton::clicked, this,
-            [this] { test(EngineThread::EngineKind::ReAct); });
-    auto* test2StageBtn = new QPushButton(QStringLiteral("测试两阶段ReAct"), this);
-    toolbar->addWidget(test2StageBtn);
-    connect(test2StageBtn, &QPushButton::clicked, this,
-            [this] { test(EngineThread::EngineKind::TwoStageReAct); });
-
     // 菜单栏：设置入口
     auto* settingsMenu = menuBar()->addMenu(QStringLiteral("设置(&S)"));
     auto* settingsAction = settingsMenu->addAction(QStringLiteral("设置…"));
@@ -61,14 +49,12 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     appendLog(QStringLiteral("[UI] 主窗口与日志/对话窗口已就绪。"));
 }
 
-void MainWindow::test(EngineThread::EngineKind kind) {
+void MainWindow::startEngine(const std::string& prompt, EngineThread::EngineKind kind) {
     if (_engineThread && _engineThread->isRunning()) {
         return;
     }
     // 用当前 _settings（值拷贝）驱动引擎装配；workDir 空时 EngineThread 内部回退 currentPath
-    _engineThread = new EngineThread(_postMessage,
-                                     "帮我检查当前目录的文件",
-                                     _settings, kind, this);
+    _engineThread = new EngineThread(_postMessage, prompt, _settings, kind, this);
     QThread* const expected = _engineThread;
     connect(_engineThread, &QThread::finished, this, [this, expected] {
         if (_engineThread == expected) { _engineThread = nullptr; }
@@ -86,9 +72,18 @@ void MainWindow::onChatSend() {
     if (text.isEmpty()) {
         return;
     }
+    if (_engineThread && _engineThread->isRunning()) {
+        _postMessage->post(qh::schema::Level::Warn, "引擎正在运行，请等待本轮结束");
+        return;
+    }
     _chatDock->view()->append(QStringLiteral("<b>你:</b> ") + text.toHtmlEscaped());
     _chatDock->input()->clear();
     appendLog(QStringLiteral("[Chat] 用户发送: ") + text);
+    // enableThinking 决定引擎种类：true→两阶段 ReAct，false→普通 ReAct（与设置语义一致）
+    const EngineThread::EngineKind kind = _settings._enableThinking
+        ? EngineThread::EngineKind::TwoStageReAct
+        : EngineThread::EngineKind::ReAct;
+    startEngine(text.toStdString(), kind);
 }
 
 void MainWindow::loadSettings() {

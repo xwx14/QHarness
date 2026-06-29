@@ -4,7 +4,7 @@
 #include "LogDock.h"
 #include "ChatDock.h"
 #include "QPostMessage.h"
-#include "EngineThread.h"   // test() 的 EngineThread::EngineKind 参数
+#include "EngineThread.h"   // startEngine() 的 EngineThread::EngineKind 参数
 #include <string>
 #include "schema/Settings.h"
 
@@ -15,14 +15,14 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget* parent = nullptr);
-    // 触发 mock 引擎 ReAct 循环：kind 选择单阶段(ReAct)或两阶段(TwoStageReAct)
-    void test(EngineThread::EngineKind kind = EngineThread::EngineKind::ReAct);
 private slots:
     void onChatSend();
     void onSettings();
 
 private:
     void appendLog(const QString& text);
+    // 启动引擎线程跑 prompt：守卫已在运行的线程，由 onChatSend 调用
+    void startEngine(const std::string& prompt, EngineThread::EngineKind kind);
 
     LogDock* _logDock = nullptr;
     ChatDock* _chatDock = nullptr;
