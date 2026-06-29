@@ -9,6 +9,7 @@
 #include "provider/MockProvider.h"
 #include "provider/MockTwoStageProvider.h"
 #include "tool/MockBashTool.h"
+#include "tool/ReadFileTool.h"
 #include "tool/ToolManager.h"
 #include <utility>
 
@@ -51,18 +52,28 @@ EngineThread::EngineThread(QPostMessage* postMessage, std::string prompt,
     }
     _provider->setPostMessage(_postMessage);
 
-    // 2) 工具：本阶段仅 MockBashTool；按 enabledTools 名字筛选注册（空 = 不注册任何工具）
-    _bashTool    = std::make_unique<tool::MockBashTool>();
-    _toolManager = std::make_unique<tool::ToolManager>();
-    _toolManager->setPostMessage(_postMessage);
-    for (const auto& name : _settings._enabledTools) {
-        if (name == "bash") _toolManager->registerTool(*_bashTool);
-    }
-
-    // 3) Engine：kind 决定种类（ReAct/两阶段）；enableThinking 仅作用于两阶段 Phase1
+    // 工作目录：空 → 回退当前路径（read_file 等工具需在工具创建前确定）
     std::string workDir = _settings._workDir.empty()
         ? QDir::currentPath().toStdString()
         : _settings._workDir;
+
+    // 2) 工具：按 enabledTools 名字筛选创建并注册（空 = 不注册任何工具）
+    _toolManager = std::make_unique<tool::ToolManager>();
+    _toolManager->setPostMessage(_postMessage);
+    for (const auto& name : _settings._enabledTools) {
+        std::unique_ptr<tool::Tool> t;
+        if (name == "bash") {
+            t = std::make_unique<tool::MockBashTool>();
+        } else if (name == "read_file") {
+            t = std::make_unique<tool::ReadFileTool>(workDir);
+        }
+        if (t) {
+            _toolManager->registerTool(*t);
+            _tools.push_back(std::move(t));   // 持有所有权，生命周期长于 ToolManager 引用
+        }
+    }
+
+    // 3) Engine：kind 决定种类（ReAct/两阶段）；enableThinking 仅作用于两阶段 Phase1
     if (kind == EngineKind::TwoStageReAct) {
         _engine = std::make_unique<engine::Engine2StageReAct>(
             _provider.get(), _toolManager.get(), std::move(workDir), _settings._enableThinking);

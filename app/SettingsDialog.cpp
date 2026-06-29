@@ -23,6 +23,10 @@
 namespace qh {
 namespace app {
 
+// 可在设置窗口勾选加载的工具清单（单一数据源，驱动工具 Tab 的构建/回显/收集；
+// 新增工具只需在此登记，并在 EngineThread 按名注册对应实现）
+static const char* const kToolNames[] = { "bash", "read_file" };
+
 SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     setWindowTitle("设置");
     resize(720, 520);
@@ -115,10 +119,12 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     auto* tools = new QWidget;
     auto* toolsV = new QVBoxLayout(tools);
     _toolsList = new QListWidget;
-    _toolsList->addItem("bash");
-    QListWidgetItem* it = _toolsList->item(0);
-    it->setFlags(it->flags() | Qt::ItemIsUserCheckable);
-    it->setCheckState(Qt::Unchecked);
+    for (const char* toolName : kToolNames) {
+        _toolsList->addItem(toolName);
+        QListWidgetItem* it = _toolsList->item(_toolsList->count() - 1);
+        it->setFlags(it->flags() | Qt::ItemIsUserCheckable);
+        it->setCheckState(Qt::Unchecked);
+    }
     toolsV->addWidget(new QLabel("勾选要加载的工具："));
     toolsV->addWidget(_toolsList);
     _tabs->addTab(tools, "工具");
@@ -150,10 +156,14 @@ void SettingsDialog::setSettings(const schema::Settings& s) {
     _loading = true;
     (s._enableThinking ? _twoStageRadio : _reactRadio)->setChecked(true);
     _workDirEdit->setText(QString::fromStdString(s._workDir));
-    QListWidgetItem* bashItem = _toolsList->item(0);
-    bool bashOn = std::find(s._enabledTools.begin(), s._enabledTools.end(), "bash")
+    // 按名回显各工具勾选态（列表行序与 kToolNames 一致）
+    for (int i = 0; i < _toolsList->count(); ++i) {
+        QListWidgetItem* item = _toolsList->item(i);
+        std::string toolName = item->text().toStdString();
+        bool on = std::find(s._enabledTools.begin(), s._enabledTools.end(), toolName)
                   != s._enabledTools.end();
-    bashItem->setCheckState(bashOn ? Qt::Checked : Qt::Unchecked);
+        item->setCheckState(on ? Qt::Checked : Qt::Unchecked);
+    }
     // 选中激活供应商（单击语义：激活=当前选中）
     int row = -1;
     for (int i = 0; i < (int)_settings._providers.size(); ++i) {
@@ -169,9 +179,12 @@ schema::Settings SettingsDialog::getSettings() const {
     s._enableThinking = _twoStageRadio->isChecked();
     s._workDir = _workDirEdit->text().trimmed().toStdString();
     s._enabledTools.clear();
-    QListWidgetItem* bashItem = _toolsList->item(0);
-    if (bashItem && bashItem->checkState() == Qt::Checked) {
-        s._enabledTools.push_back("bash");
+    // 收集所有勾选的工具名
+    for (int i = 0; i < _toolsList->count(); ++i) {
+        QListWidgetItem* item = _toolsList->item(i);
+        if (item && item->checkState() == Qt::Checked) {
+            s._enabledTools.push_back(item->text().toStdString());
+        }
     }
     return s;
 }

@@ -1,3 +1,8 @@
+# 抑制 <codecvt>/wstring_convert 的 C++17 弃用警告（PathCodec.h 用其做编码转换；标准尚未给替代）
+if(MSVC)
+    add_compile_definitions(_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+endif()
+
 # 所有头文件一并列入源列表，使其在 VS 工程中可见（头文件不被直接编译，仅用于工程组织）
 add_library(qharness_core SHARED
     qh_export.h
@@ -18,6 +23,7 @@ add_library(qharness_core SHARED
     tool/ToolManager.h          tool/ToolManager.cpp
     tool/MockBashTool.h         tool/MockBashTool.cpp
     tool/ReadFileTool.h         tool/ReadFileTool.cpp
+    tool/PathCodec.h
     interaction/Interaction.h
     interaction/InteractionFeishu.h    interaction/InteractionFeishu.cpp
     memory/Memory.h

@@ -3,12 +3,13 @@
 #include <QThread>
 #include <memory>
 #include <string>
+#include <vector>
 #include "QPostMessage.h"
 #include "schema/Settings.h"
 
 namespace qh {
 namespace provider { class Provider; }   // 基类（OpenAI/Claude/Mock 之一）
-namespace tool { class MockBashTool; class ToolManager; }
+namespace tool { class Tool; class ToolManager; }
 namespace engine { class Engine; }       // 基类（EngineReActLoop 或 Engine2StageReAct）
 
 namespace app {
@@ -28,10 +29,10 @@ public:
     void run() override;   // worker 线程入口
 
 private:
-    // 声明顺序决定析构逆序 = _engine→_toolManager→_bashTool→_provider
+    // 声明顺序决定析构逆序 = _engine→_toolManager→_tools→_provider
     // 保证引用者先于被引用者析构（_engine/_toolManager 持有下层 raw 引用）
     std::unique_ptr<qh::provider::Provider> _provider;
-    std::unique_ptr<qh::tool::MockBashTool> _bashTool;
+    std::vector<std::unique_ptr<qh::tool::Tool>> _tools;   // 按 enabledTools 创建的工具实例（持有所有权）
     std::unique_ptr<qh::tool::ToolManager>  _toolManager;
     std::unique_ptr<qh::engine::Engine>     _engine;
     QPostMessage* _postMessage = nullptr;   // 非拥有（MainWindow._postMessage）
