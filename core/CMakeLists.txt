@@ -99,6 +99,7 @@ add_executable(qharness_core_tests
     tests/test_ContentCodec.cpp
     tests/test_EngineReActLoop.cpp
     tests/test_Engine2StageReAct.cpp
+    tests/test_TestRunner.cpp
     tests/MockHttpServer.h
     tests/test_ProviderHttp.cpp
     tests/test_ProviderOpenAI.cpp

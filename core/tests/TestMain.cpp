@@ -7,7 +7,12 @@ int main() {
     std::cout << "=== QHarness Core Tests ===\n";
     for (auto& tc : qh::test::registry()) {
         std::cout << "[ " << tc.name << " ]\n";
-        tc.fn();
+        auto r = qh::test::runSingle(tc);
+        if (r.threw) {
+            qh::test::failCount()++;
+            std::cerr << "  FAIL: uncaught exception: " << r.what
+                      << " (" << tc.name << ")\n";
+        }
     }
     qh::checks::touchSkeletons();
     std::cout << "Skeletons compile & link OK\n";
