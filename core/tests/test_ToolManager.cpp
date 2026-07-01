@@ -174,3 +174,14 @@ QH_TEST(toolmanager_unregister) {
     QH_CHECK(!tm.unregisterTool("bash"));         // 再次注销：false
     QH_CHECK(!tm.unregisterTool("never"));        // 注销不存在的工具：false
 }
+
+#ifdef _WIN32
+#include "tool/WinBashTool.h"
+QH_TEST(resourceKey_winbash_returns_global_key) {
+    qh::tool::WinBashTool b(".");          // resourceKey 不依赖工作目录
+    qh::schema::ToolCall c; c._name = "bash"; c._arguments = R"({"command":"ls"})";
+    auto k = b.resourceKey(c);
+    QH_CHECK(k.has_value());
+    QH_CHECK_EQ(*k, std::string("__bash__"));
+}
+#endif

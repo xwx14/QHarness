@@ -13,6 +13,11 @@ class QH_API LinuxBashTool : public Tool {
 public:
     explicit LinuxBashTool(std::string workDir);
     schema::ToolResult execute(const schema::ToolCall& call) override;
+
+    // bash 命令的目标文件无法从 command 静态推断；所有 bash 归一桶串行（避免命令互相干扰）
+    std::optional<std::string> resourceKey(const schema::ToolCall& call) const override {
+        return "__bash__";
+    }
 };
 
 } // namespace tool
