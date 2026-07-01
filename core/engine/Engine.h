@@ -19,10 +19,14 @@ public:
     virtual ~Engine() = default;
     virtual void run(const std::string& userPrompt) = 0;
 
+    // 工具并发上限（0=无上限）；由 app 从 Settings 注入。executeAll 据此限流。
+    void setMaxToolConcurrency(int n) { _maxToolConcurrency = n; }
+
 protected:
     provider::Provider* _provider = nullptr;     // 非拥有
     tool::ToolManager* _toolManager = nullptr;   // 非拥有
     std::string _workDir;
+    int _maxToolConcurrency = 0;
 };
 
 } // namespace engine

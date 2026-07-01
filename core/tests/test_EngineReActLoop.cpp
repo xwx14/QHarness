@@ -62,7 +62,7 @@ QH_TEST(enginereactloop_runs_react_cycle_with_mock) {
     // 循环正常完成：收到"任务完成"Info 消息
     QH_CHECK(hasInfoContaining(pm, "任务完成"));
     // 第1轮触发了工具执行
-    QH_CHECK(hasInfoContaining(pm, "执行工具"));
+    QH_CHECK(hasInfoContaining(pm, "工具["));
     // 模型对外回复走 Chat 级别（第2轮完成文本）
     QH_CHECK(hasLevelContaining(pm, qh::schema::Level::Chat, "看到了文件"));
     // generate 与工具均成功，无 error

@@ -68,19 +68,19 @@ void Engine2StageReAct::run(const std::string& userPrompt) {
         }
 
         // 执行工具 + 观察（Observation）回填为 User 消息，携带 ToolCallID 维系推理链
-        info("模型请求调用 " + std::to_string(actionResult.message._toolCalls.size()) + " 个工具...");
-        for (const auto& call : actionResult.message._toolCalls) {
-            info("  -> 执行工具: " + call._name + ", 参数: " + call._arguments);
-            schema::ToolResult toolResult = _toolManager->execute(call);
-            if (toolResult._isError) {
-                error("  -> 工具执行报错: " + toolResult._output);
-            } else {
-                info("  -> 工具执行成功 (返回 " + std::to_string(toolResult._output.size()) + " 字节)");
-            }
+        const auto& calls = actionResult.message._toolCalls;
+        info("模型请求调用 " + std::to_string(calls.size()) + " 个工具，并发度="
+             + (_maxToolConcurrency <= 0 ? std::string("无上限") : std::to_string(_maxToolConcurrency)));
+        std::vector<schema::ToolResult> toolResults = _toolManager->executeAll(calls, _maxToolConcurrency);
+        for (size_t i = 0; i < calls.size(); ++i) {
+            const auto& tr = toolResults[i];
+            if (tr._isError) error("  -> 工具[" + calls[i]._name + "] 报错: " + tr._output);
+            else info("  -> 工具[" + calls[i]._name + "] 成功 (返回 "
+                      + std::to_string(tr._output.size()) + " 字节)");
             schema::Message observation;
             observation._role = schema::Role::User;
-            observation._content = toolResult._output;
-            observation._toolCallId = call._id;
+            observation._content = tr._output;
+            observation._toolCallId = calls[i]._id;
             history.push_back(observation);
         }
     }
