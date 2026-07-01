@@ -11,6 +11,7 @@
 #include "tool/BashTool.h"
 #include "tool/ReadFileTool.h"
 #include "tool/WriteFileTool.h"
+#include "tool/EditFileTool.h"
 #include "tool/ToolManager.h"
 #include <utility>
 
@@ -69,6 +70,8 @@ EngineThread::EngineThread(QPostMessage* postMessage, std::string prompt,
             t = std::make_unique<tool::ReadFileTool>(workDir);
         } else if (name == "write_file") {
             t = std::make_unique<tool::WriteFileTool>(workDir);
+        } else if (name == "edit_file") {
+            t = std::make_unique<tool::EditFileTool>(workDir);
         }
         if (t) {
             _toolManager->registerTool(*t);

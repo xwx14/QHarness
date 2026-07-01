@@ -24,6 +24,7 @@ add_library(qharness_core SHARED
     tool/MockBashTool.h         tool/MockBashTool.cpp
     tool/ReadFileTool.h         tool/ReadFileTool.cpp
     tool/WriteFileTool.h        tool/WriteFileTool.cpp
+    tool/EditFileTool.h         tool/EditFileTool.cpp
     tool/BashTool.h
     tool/WinBashTool.h
     tool/LinuxBashTool.h
@@ -96,6 +97,7 @@ add_executable(qharness_core_tests
     tests/test_MockBashTool.cpp
     tests/test_ReadFileTool.cpp
     tests/test_WriteFileTool.cpp
+    tests/test_EditFileTool.cpp
     tests/test_ContentCodec.cpp
     tests/test_EngineReActLoop.cpp
     tests/test_Engine2StageReAct.cpp

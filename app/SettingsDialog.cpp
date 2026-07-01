@@ -25,7 +25,7 @@ namespace app {
 
 // 可在设置窗口勾选加载的工具清单（单一数据源，驱动工具 Tab 的构建/回显/收集；
 // 新增工具只需在此登记，并在 EngineThread 按名注册对应实现）
-static const char* const kToolNames[] = { "bash", "read_file", "write_file" };
+static const char* const kToolNames[] = { "bash", "read_file", "write_file", "edit_file" };
 
 SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     setWindowTitle("设置");
