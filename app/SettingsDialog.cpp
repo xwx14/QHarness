@@ -28,6 +28,9 @@ namespace app {
 // 新增工具只需在此登记，并在 EngineThread 按名注册对应实现）
 static const char* const kToolNames[] = { "bash", "read_file", "write_file", "edit_file" };
 
+// 工具并发上限的 UI 输入上限（Settings._maxToolConcurrency 是 int 无上限，UI 限此值防误填超大）
+static constexpr int kMaxToolConcurrency = 32;
+
 SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     setWindowTitle("设置");
     resize(720, 520);
@@ -115,7 +118,7 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     engV->addWidget(_twoStageRadio);
     engV->addWidget(new QLabel("工具并发上限（0=无上限）："));
     _concurrencySpin = new QSpinBox;
-    _concurrencySpin->setRange(0, 32);
+    _concurrencySpin->setRange(0, kMaxToolConcurrency);
     _concurrencySpin->setSpecialValueText("0（无上限）");   // 0 显示为"无上限"
     _concurrencySpin->setValue(0);
     engV->addWidget(_concurrencySpin);

@@ -1,5 +1,6 @@
 #ifndef QH_TOOL_LINUXBASH_H
 #define QH_TOOL_LINUXBASH_H
+#include <optional>
 #include <string>
 #include "tool/Tool.h"
 #include "qh_export.h"

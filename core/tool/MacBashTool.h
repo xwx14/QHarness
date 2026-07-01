@@ -1,5 +1,6 @@
 #ifndef QH_TOOL_MACBASH_H
 #define QH_TOOL_MACBASH_H
+#include <optional>
 #include <string>
 #include "tool/Tool.h"
 #include "qh_export.h"

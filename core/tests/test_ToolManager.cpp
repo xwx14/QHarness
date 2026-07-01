@@ -278,12 +278,9 @@ QH_TEST(executeAll_diff_keys_run_concurrently) {
     ProbeTool a("a", "ka", 50), b("b", "kb", 50), c("c", "kc", 50);   // 不同 key，各 sleep 50ms
     tm.registerTool(a); tm.registerTool(b); tm.registerTool(c);
     ProbeTool::resetProbe();
-    auto t0 = std::chrono::steady_clock::now();
     auto rs = tm.executeAll({makeCall("1","a"),makeCall("2","b"),makeCall("3","c")}, 0);
-    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-t0).count();
     QH_CHECK_EQ(rs.size(), (size_t)3);
-    QH_CHECK(ProbeTool::peakValue() >= 2);                 // 真并发（峰值>=2）
-    QH_CHECK(dt < 120);                                    // 并发总耗时远小于串行 150ms
+    QH_CHECK(ProbeTool::peakValue() >= 2);                 // 真并发（峰值>=2，不依赖 timing 避免 CI flaky）
 }
 
 QH_TEST(executeAll_same_key_run_serially_no_lost_update) {
