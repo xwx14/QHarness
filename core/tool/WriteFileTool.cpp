@@ -86,5 +86,16 @@ schema::ToolResult WriteFileTool::execute(const schema::ToolCall& call) {
     return result;
 }
 
+std::optional<std::string> WriteFileTool::resourceKey(const schema::ToolCall& call) const {
+    const nlohmann::json args = call.parseArguments();
+    if (!args.is_object() || !args.contains("path") || !args["path"].is_string())
+        return std::nullopt;
+    const std::string relPath = args["path"].get<std::string>();
+    const fs::path base = resolveWorkBase();
+    if (base.empty()) return std::nullopt;
+    auto hit = resolveInsideForWrite(base, relPath);   // 穿越检查 + 规范化，不查存在性
+    return hit ? std::optional<std::string>(hit->string()) : std::nullopt;
+}
+
 } // namespace tool
 } // namespace qh

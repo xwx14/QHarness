@@ -21,6 +21,12 @@ public:
     const schema::ToolDefinition& definition() const { return _definition; }
     virtual schema::ToolResult execute(const schema::ToolCall& call) = 0;
 
+    // 该调用锁定的资源键：相同键的调用在 executeAll 中被串行化执行；
+    // nullopt 表示不参与串行化（自由并发）。默认 nullopt。
+    virtual std::optional<std::string> resourceKey(const schema::ToolCall& call) const {
+        return std::nullopt;
+    }
+
 protected:
     schema::ToolDefinition _definition;
 

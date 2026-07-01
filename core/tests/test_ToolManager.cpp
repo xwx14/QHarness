@@ -1,8 +1,12 @@
 #include "TestHarness.h"
 #include "tool/Tool.h"
 #include "tool/ToolManager.h"
+#include "tool/ReadFileTool.h"
+#include "tool/WriteFileTool.h"
+#include "tool/EditFileTool.h"
 #include "schema/Message.h"
 #include <nlohmann/json.hpp>
+#include <filesystem>
 #include <string>
 
 using nlohmann::json;
@@ -44,6 +48,52 @@ qh::schema::ToolCall makeCall(const std::string& id, const std::string& name) {
 }
 
 } // namespace
+
+namespace fs = std::filesystem;
+namespace {
+
+fs::path probeWorkDir() {
+    fs::path dir = fs::temp_directory_path() / "qh_reskey_test";
+    fs::create_directories(dir);
+    return dir;
+}
+qh::schema::ToolCall callWithPath(const std::string& path) {
+    qh::schema::ToolCall c;
+    c._name = "x";
+    c._arguments = std::string("{\"path\":\"") + path + "\"}";
+    return c;
+}
+} // namespace
+
+QH_TEST(resourceKey_file_tools_same_path_same_key) {
+    const fs::path dir = probeWorkDir();
+    qh::tool::ReadFileTool r(dir.string());
+    qh::tool::WriteFileTool w(dir.string());
+    qh::tool::EditFileTool e(dir.string());
+    auto kr = r.resourceKey(callWithPath("a.txt"));
+    auto kw = w.resourceKey(callWithPath("a.txt"));
+    auto ke = e.resourceKey(callWithPath("a.txt"));
+    QH_CHECK(kr.has_value() && kw.has_value() && ke.has_value());
+    QH_CHECK_EQ(*kr, *kw);    // read/write 同 path → 同 key（读写互斥）
+    QH_CHECK_EQ(*kr, *ke);
+}
+
+QH_TEST(resourceKey_file_tools_diff_path_diff_key) {
+    const fs::path dir = probeWorkDir();
+    qh::tool::ReadFileTool r(dir.string());
+    auto k1 = r.resourceKey(callWithPath("a.txt"));
+    auto k2 = r.resourceKey(callWithPath("b.txt"));
+    QH_CHECK(k1.has_value() && k2.has_value());
+    QH_CHECK(*k1 != *k2);
+}
+
+QH_TEST(resourceKey_file_tools_missing_or_traversal_returns_nullopt) {
+    const fs::path dir = probeWorkDir();
+    qh::tool::ReadFileTool r(dir.string());
+    qh::schema::ToolCall noPath; noPath._arguments = "{}";
+    QH_CHECK(!r.resourceKey(noPath).has_value());                  // 缺 path
+    QH_CHECK(!r.resourceKey(callWithPath("../../../../etc/passwd")).has_value());  // 越界
+}
 
 QH_TEST(toolmanager_register_and_lookup) {
     qh::tool::ToolManager tm;

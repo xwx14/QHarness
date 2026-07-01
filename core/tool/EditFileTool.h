@@ -1,6 +1,7 @@
 #ifndef QH_TOOL_EDITFILE_H
 #define QH_TOOL_EDITFILE_H
 #include <string>
+#include <optional>
 #include "tool/Tool.h"
 #include "qh_export.h"
 
@@ -18,6 +19,9 @@ public:
     explicit EditFileTool(std::string workDir);
 
     schema::ToolResult execute(const schema::ToolCall& call) override;
+
+    // 同一文件路径 → 同一资源键（executeAll 据此把同文件操作串行化，防 lost update）
+    std::optional<std::string> resourceKey(const schema::ToolCall& call) const override;
 };
 
 } // namespace tool

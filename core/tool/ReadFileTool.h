@@ -1,6 +1,7 @@
 #ifndef QH_TOOL_READFILE_H
 #define QH_TOOL_READFILE_H
 #include <string>
+#include <optional>
 #include "tool/Tool.h"
 #include "qh_export.h"
 
@@ -15,6 +16,9 @@ public:
     explicit ReadFileTool(std::string workDir);
 
     schema::ToolResult execute(const schema::ToolCall& call) override;
+
+    // 同一文件路径 → 同一资源键（executeAll 据此把同文件操作串行化，防 lost update）
+    std::optional<std::string> resourceKey(const schema::ToolCall& call) const override;
 
     // 超长内容截断阈值（字节）：防止读取超大文件撑爆上下文
     static const std::size_t kMaxLen = 8000;
