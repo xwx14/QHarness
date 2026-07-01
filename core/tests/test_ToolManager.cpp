@@ -8,6 +8,12 @@
 #include <nlohmann/json.hpp>
 #include <filesystem>
 #include <string>
+#include <atomic>
+#include <chrono>
+#include <thread>
+#include <future>
+#include <map>
+#include <algorithm>
 
 using nlohmann::json;
 
@@ -185,3 +191,135 @@ QH_TEST(resourceKey_winbash_returns_global_key) {
     QH_CHECK_EQ(*k, std::string("__bash__"));
 }
 #endif
+
+// ===== executeAll 分桶 Fork-Join 测试 =====
+
+namespace {
+
+// 探针工具：可配置 resourceKey、是否 sleep、是否抛异常；记录同时在跑的峰值（测并发度）
+class ProbeTool : public qh::tool::Tool {
+public:
+    ProbeTool(std::string name, std::optional<std::string> key,
+              int sleepMs = 0, bool throwOnExec = false)
+        : Tool(makeDef(name)), _key(std::move(key)), _sleepMs(sleepMs), _throw(throwOnExec) {}
+
+    std::optional<std::string> resourceKey(const qh::schema::ToolCall&) const override { return _key; }
+
+    qh::schema::ToolResult execute(const qh::schema::ToolCall& call) override {
+        if (_throw) throw std::runtime_error("probe boom");
+        int cur = ++active();
+        int p = peak().load();
+        while (cur > p && !peak().compare_exchange_weak(p, cur)) {}
+        if (_sleepMs > 0) std::this_thread::sleep_for(std::chrono::milliseconds(_sleepMs));
+        --active();
+        qh::schema::ToolResult r;
+        r._toolCallId = call._id;
+        r._output = "probe-" + call._id;
+        r._isError = false;
+        return r;
+    }
+    static void resetProbe() { active() = 0; peak() = 0; }
+    static int peakValue() { return peak().load(); }
+private:
+    static std::atomic<int>& active() { static std::atomic<int> a{0}; return a; }
+    static std::atomic<int>& peak()   { static std::atomic<int> p{0}; return p; }
+    static qh::schema::ToolDefinition makeDef(const std::string& name) {
+        qh::schema::ToolDefinition d; d._name = name; d._description = "probe"; d._inputSchema = json::object();
+        return d;
+    }
+    std::optional<std::string> _key;
+    int _sleepMs;
+    bool _throw;
+};
+
+// 读改写计数工具（非原子，模拟"文件读改写"）：仅当被串行执行时 counter 才正确累加
+class RacyCounterTool : public qh::tool::Tool {
+public:
+    RacyCounterTool() : Tool(makeDef()) {}
+    std::optional<std::string> resourceKey(const qh::schema::ToolCall&) const override { return "same-file"; }
+    qh::schema::ToolResult execute(const qh::schema::ToolCall& call) override {
+        int c = counter();                 // 读
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));  // 放大竞争窗口
+        counter() = c + 1;                 // 写
+        qh::schema::ToolResult r; r._toolCallId = call._id; r._output = "ok"; return r;
+    }
+    static int value() { return counter(); }
+    static void reset() { counter() = 0; }
+private:
+    static int& counter() { static int c = 0; return c; }
+    static qh::schema::ToolDefinition makeDef() {
+        qh::schema::ToolDefinition d; d._name = "racy"; d._description = "racy"; d._inputSchema = json::object();
+        return d;
+    }
+};
+
+} // namespace
+
+QH_TEST(executeAll_preserves_order) {
+    qh::tool::ToolManager tm;
+    ProbeTool a("a", std::nullopt, 0), b("b", std::nullopt, 0), c("c", std::nullopt, 0);
+    tm.registerTool(a); tm.registerTool(b); tm.registerTool(c);
+    std::vector<qh::schema::ToolCall> calls{makeCall("1","a"), makeCall("2","b"), makeCall("3","c")};
+    auto rs = tm.executeAll(calls, 0);
+    QH_CHECK_EQ(rs.size(), (size_t)3);
+    QH_CHECK_EQ(rs[0]._toolCallId, std::string("1")); QH_CHECK_EQ(rs[0]._output, std::string("probe-1"));
+    QH_CHECK_EQ(rs[1]._toolCallId, std::string("2"));
+    QH_CHECK_EQ(rs[2]._toolCallId, std::string("3"));
+}
+
+QH_TEST(executeAll_empty_calls) {
+    qh::tool::ToolManager tm;
+    auto rs = tm.executeAll({}, 0);
+    QH_CHECK_EQ(rs.size(), (size_t)0);
+}
+
+QH_TEST(executeAll_diff_keys_run_concurrently) {
+    qh::tool::ToolManager tm;
+    ProbeTool a("a", "ka", 50), b("b", "kb", 50), c("c", "kc", 50);   // 不同 key，各 sleep 50ms
+    tm.registerTool(a); tm.registerTool(b); tm.registerTool(c);
+    ProbeTool::resetProbe();
+    auto t0 = std::chrono::steady_clock::now();
+    auto rs = tm.executeAll({makeCall("1","a"),makeCall("2","b"),makeCall("3","c")}, 0);
+    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-t0).count();
+    QH_CHECK_EQ(rs.size(), (size_t)3);
+    QH_CHECK(ProbeTool::peakValue() >= 2);                 // 真并发（峰值>=2）
+    QH_CHECK(dt < 120);                                    // 并发总耗时远小于串行 150ms
+}
+
+QH_TEST(executeAll_same_key_run_serially_no_lost_update) {
+    qh::tool::ToolManager tm;
+    RacyCounterTool r; tm.registerTool(r);                 // resourceKey 恒 "same-file"
+    RacyCounterTool::reset();
+    auto rs = tm.executeAll({makeCall("1","racy"),makeCall("2","racy"),makeCall("3","racy")}, 0);
+    QH_CHECK_EQ(rs.size(), (size_t)3);
+    QH_CHECK_EQ(RacyCounterTool::value(), 3);              // 串行→无 lost update，计数==3
+}
+
+QH_TEST(executeAll_throwing_tool_isolated_as_error) {
+    qh::tool::ToolManager tm;
+    ProbeTool boom("boom", std::nullopt, 0, true), ok("ok", std::nullopt, 0, false);
+    tm.registerTool(boom); tm.registerTool(ok);
+    auto rs = tm.executeAll({makeCall("1","boom"),makeCall("2","ok")}, 0);
+    QH_CHECK_EQ(rs.size(), (size_t)2);
+    QH_CHECK(rs[0]._isError);                              // 抛异常→isError，不炸进程
+    QH_CHECK_EQ(rs[1]._toolCallId, std::string("2"));      // 其他工具正常
+    QH_CHECK(!rs[1]._isError);
+}
+
+QH_TEST(executeAll_bash_bucket_serial) {
+    qh::tool::ToolManager tm;
+    ProbeTool b1("b1", "__bash__", 30), b2("b2", "__bash__", 30);  // 同 __bash__ 桶
+    tm.registerTool(b1); tm.registerTool(b2);
+    ProbeTool::resetProbe();
+    tm.executeAll({makeCall("1","b1"),makeCall("2","b2")}, 0);
+    QH_CHECK_EQ(ProbeTool::peakValue(), 1);                // bash 桶串行
+}
+
+QH_TEST(executeAll_max_concurrency_limits_active) {
+    qh::tool::ToolManager tm;
+    ProbeTool a("a","ka",40), b("b","kb",40), c("c","kc",40), d("d","kd",40), e("e","ke",40);
+    for (auto* t : {&a,&b,&c,&d,&e}) tm.registerTool(*t);
+    ProbeTool::resetProbe();
+    tm.executeAll({makeCall("1","a"),makeCall("2","b"),makeCall("3","c"),makeCall("4","d"),makeCall("5","e")}, 2);
+    QH_CHECK(ProbeTool::peakValue() <= 2);                 // 限流：同时活跃<=2
+}

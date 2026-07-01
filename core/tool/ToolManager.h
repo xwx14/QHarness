@@ -3,6 +3,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <future>
+#include <map>
 #include "schema/Message.h"
 #include "tool/Tool.h"
 #include "schema/PostMessage.h"
@@ -31,6 +33,11 @@ public:
 
     // 按 call._name 路由执行工具；未命中返回 isError=true 的结果（不抛异常）
     schema::ToolResult execute(const schema::ToolCall& call);
+
+    // 按 maxConcurrency 并发执行 calls：同 resourceKey 的调用串行、异 key 并发；
+    // 结果按 calls 原序返回。maxConcurrency<=0 表示无上限。任何工具抛异常都被隔离为 isError。
+    std::vector<schema::ToolResult> executeAll(const std::vector<schema::ToolCall>& calls,
+                                               int maxConcurrency);
 
 private:
     std::unordered_map<std::string, Tool*> _tools;  // 非拥有：调用方保证工具生命周期
