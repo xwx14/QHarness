@@ -30,19 +30,15 @@ public:
     }
 
     bool start() {
-        // 在一组端口中探测可用者，避免冲突
-        // 注意：避开 Hyper-V/WSL2 保留端口（netsh show excludedportrange）
-        const int ports[] = {19080, 19081, 19082, 19083, 19084, 19085, 19086, 19087};
-        for (int port : ports) {
-            if (_svr.bind_to_port("127.0.0.1", port)) {
-                _port = port;
-                _thread = std::thread([this] { _svr.listen_after_bind(); });
-                _started = true;
-                std::this_thread::sleep_for(std::chrono::milliseconds(50)); // 等 listen 就绪
-                return true;
-            }
-        }
-        return false;
+        // 用端口 0 让 OS 分配可用端口，彻底规避固定端口与系统保留范围冲突
+        // （Hyper-V/WSL2 的 excludedportrange 会动态保留大段端口，固定端口列表无法可靠避开）
+        const int port = _svr.bind_to_any_port("127.0.0.1");
+        if (port <= 0) return false;
+        _port = port;
+        _thread = std::thread([this] { _svr.listen_after_bind(); });
+        _started = true;
+        _svr.wait_until_ready();   // httplib 提供，精确等待 listen 就绪（替代固定 sleep）
+        return true;
     }
 
     void stop() {

@@ -44,9 +44,13 @@ QH_TEST(ProviderOpenAI_tool_response) {
     auto r = p.generate(cancel, {qh::schema::Message{}}, {});
     QH_CHECK(r.error.empty());
     QH_CHECK_EQ(r.message._toolCalls.size(), (size_t)1);
-    QH_CHECK_EQ(r.message._toolCalls[0]._id, std::string("call_1"));
-    QH_CHECK_EQ(r.message._toolCalls[0]._name, std::string("bash"));
-    QH_CHECK_EQ(r.message._toolCalls[0]._arguments, std::string("{\"command\":\"ls\"}"));
+    // 守卫：前置 CHECK 失败（如 mock server 未就绪致 generate 失败）时 toolCalls 可能为空，
+    // 直接 [0] 越界为未定义行为；仅在确有元素时校验字段，避免崩溃（转为干净的 CHECK 失败）
+    if (r.message._toolCalls.size() == 1) {
+        QH_CHECK_EQ(r.message._toolCalls[0]._id, std::string("call_1"));
+        QH_CHECK_EQ(r.message._toolCalls[0]._name, std::string("bash"));
+        QH_CHECK_EQ(r.message._toolCalls[0]._arguments, std::string("{\"command\":\"ls\"}"));
+    }
 }
 
 QH_TEST(ProviderOpenAI_request_format) {
