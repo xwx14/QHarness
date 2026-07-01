@@ -53,6 +53,7 @@ void to_json(nlohmann::json& j, const Settings& s) {
     if (s._enableThinking)              j["enableThinking"] = s._enableThinking;
     if (!s._workDir.empty())            j["workDir"] = s._workDir;
     if (!s._enabledTools.empty())       j["enabledTools"] = s._enabledTools;
+    if (s._maxToolConcurrency != 0)     j["maxToolConcurrency"] = s._maxToolConcurrency;
 }
 
 void from_json(const nlohmann::json& j, Settings& s) {
@@ -62,6 +63,7 @@ void from_json(const nlohmann::json& j, Settings& s) {
     s._enableThinking     = j.value("enableThinking", false);
     s._workDir            = j.value("workDir", "");
     if (j.contains("enabledTools"))       j.at("enabledTools").get_to(s._enabledTools);
+    s._maxToolConcurrency = j.value("maxToolConcurrency", 0);
 }
 
 const LlmProvider* findActiveProvider(const Settings& s) {

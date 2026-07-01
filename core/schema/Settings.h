@@ -54,6 +54,7 @@ public:
     bool                     _enableThinking = false;
     std::string              _workDir;              // 空 = 运行时回退 currentPath
     std::vector<std::string> _enabledTools;
+    int                      _maxToolConcurrency = 0;   // 工具并发上限，0 = 无上限
 };
 
 QH_API void to_json(nlohmann::json& j, const Settings& s);

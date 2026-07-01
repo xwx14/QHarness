@@ -155,3 +155,28 @@ QH_TEST(store_load_old_profiles_format_treated_empty) {
     QH_CHECK(store.lastError().empty());
     std::remove(path.c_str());
 }
+
+QH_TEST(settings_max_concurrency_default_zero) {
+    qh::schema::Settings s;
+    QH_CHECK_EQ(s._maxToolConcurrency, 0);
+}
+
+QH_TEST(settings_max_concurrency_roundtrip) {
+    qh::schema::Settings s;
+    s._maxToolConcurrency = 4;
+    json j = s;
+    QH_CHECK_EQ((int)j["maxToolConcurrency"], 4);
+    auto back = j.get<qh::schema::Settings>();
+    QH_CHECK_EQ(back._maxToolConcurrency, 4);
+}
+
+QH_TEST(settings_max_concurrency_omitempty_and_default) {
+    qh::schema::Settings s;            // 默认 0
+    json j = s;
+    QH_CHECK(!j.contains("maxToolConcurrency"));   // 0 时省略
+    auto back = j.get<qh::schema::Settings>();
+    QH_CHECK_EQ(back._maxToolConcurrency, 0);
+    // 缺字段容错
+    auto j2 = json::parse(R"({"providers":[]})");
+    QH_CHECK_EQ(j2.get<qh::schema::Settings>()._maxToolConcurrency, 0);
+}
