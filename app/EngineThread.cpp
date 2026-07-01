@@ -88,6 +88,7 @@ EngineThread::EngineThread(QPostMessage* postMessage, std::string prompt,
             _provider.get(), _toolManager.get(), std::move(workDir));
     }
     _engine->setPostMessage(_postMessage);
+    _engine->setMaxToolConcurrency(_settings._maxToolConcurrency);
 }
 
 EngineThread::~EngineThread() {

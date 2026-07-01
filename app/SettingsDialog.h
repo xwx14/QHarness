@@ -12,6 +12,7 @@ class QLineEdit;
 class QCheckBox;
 class QPushButton;
 class QButtonGroup;
+class QSpinBox;
 class QRadioButton;
 
 namespace qh {
@@ -70,6 +71,7 @@ private:
     // 其他 Tab
     QRadioButton* _reactRadio = nullptr;       // 引擎模式：普通 ReAct
     QRadioButton* _twoStageRadio = nullptr;   // 引擎模式：两阶段 ReAct（慢思考）
+    QSpinBox*     _concurrencySpin = nullptr;  // 工具并发上限（0=无上限）
     QListWidget*  _toolsList = nullptr;
     QLineEdit*    _workDirEdit = nullptr;
 };

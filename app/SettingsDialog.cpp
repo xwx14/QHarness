@@ -14,6 +14,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QSpinBox>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QString>
@@ -112,6 +113,12 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     _reactRadio->setChecked(true);   // 默认普通 ReAct（与 _enableThinking 默认 false 一致；setSettings 会覆盖）
     engV->addWidget(_reactRadio);
     engV->addWidget(_twoStageRadio);
+    engV->addWidget(new QLabel("工具并发上限（0=无上限）："));
+    _concurrencySpin = new QSpinBox;
+    _concurrencySpin->setRange(0, 32);
+    _concurrencySpin->setSpecialValueText("0（无上限）");   // 0 显示为"无上限"
+    _concurrencySpin->setValue(0);
+    engV->addWidget(_concurrencySpin);
     engV->addStretch();
     _tabs->addTab(eng, "引擎");
 
@@ -171,6 +178,7 @@ void SettingsDialog::setSettings(const schema::Settings& s) {
     }
     if (row < 0 && !_settings._providers.empty()) row = 0;
     rebuildProviderList(row);
+    _concurrencySpin->setValue(s._maxToolConcurrency);
     _loading = false;
 }
 
@@ -186,6 +194,7 @@ schema::Settings SettingsDialog::getSettings() const {
             s._enabledTools.push_back(item->text().toStdString());
         }
     }
+    s._maxToolConcurrency = _concurrencySpin->value();
     return s;
 }
 
